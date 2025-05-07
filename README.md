@@ -7,3 +7,5 @@ Repository for the Traffic Flow Data Space (TFDS) projects data space design and
 The data space architectural design is developed using [mermaid](https://github.com/mermaid-js/mermaid).
 
 ### Architecture schematics
+
+* [Logical architecture schematic full](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_full.md)
