@@ -9,3 +9,7 @@ The data space architectural design is developed using [mermaid](https://github.
 ### Architecture schematics
 
 * [Logical architecture schematic full](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_full.md)
+* [Logical architecture schematic user registration](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_user_registration.md)
+* [Logical architecture schematic data product offering publication](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_data_product_offeting_publication.md)
+* [Logical architecture schematic data product offering query](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_data_product_query.md)
+* [Logical architecture schematic data transaction](data_space_architecture_schematics/logical_architecture_schematics/logical_architecture_schematic_data_transaction.md)
