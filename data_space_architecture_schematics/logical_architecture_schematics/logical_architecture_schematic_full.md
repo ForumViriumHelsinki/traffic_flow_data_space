@@ -1,5 +1,5 @@
 ```mermaid
-graph LR
+graph TB
     subgraph "TFDS MVDS"
 
         subgraph DSDC[Data Space Data Consumer]
@@ -10,6 +10,11 @@ graph LR
                 ConsumerDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
                 ConsumerDSCdataExhange(Data Exchange Protocol Handling):::ConsumerDSC
                 ConsumerDSClog(Logging and Auditing):::ConsumerDSC
+
+                ConsumerDSCiam --- ConsumerDSCmeta
+                ConsumerDSCmeta --- ConsumerDSCcontract
+                ConsumerDSCcontract --- ConsumerDSCdataExhange
+                ConsumerDSCdataExhange --- ConsumerDSClog
             end
         end
 
@@ -18,11 +23,17 @@ graph LR
         end
 
         subgraph FDSC[Federal Data Space Services]
+            RegPortal("Registration Portal"):::federalDS
             FedCatalog("Federated Catalog"):::federalDS
             IAM("Identity and Access<br>Management"):::federalDS
             AuthZ("Authorization<br>Management"):::federalDS
             Logger("Transaction Logging"):::federalDS
-            RegPortal("Registration Portal"):::federalDS
+
+            RegPortal --- FedCatalog
+            FedCatalog --- IAM
+            IAM --- AuthZ
+            AuthZ --- Logger
+
         end
 
         subgraph DSDP[Data Space Data Provider]
@@ -35,6 +46,12 @@ graph LR
                 ProviderDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
                 ProviderDSCdataExhange(Data Exchange Protocol Handling):::providerDSC
                 ProviderDSClog(Logging and Auditing):::providerDSC
+
+                ProviderDSCiam --- ProviderDSCpep
+                ProviderDSCpep --- ProviderDSCmeta
+                ProviderDSCmeta --- ProviderDSCcontract
+                ProviderDSCcontract --- ProviderDSCdataExhange
+                ProviderDSCdataExhange --- ProviderDSClog
             end
         end
 
