@@ -1,15 +1,15 @@
 ```mermaid
 graph TB
-    subgraph "TFDS MVDS"
+    subgraph TfdsMvds["TFDS MVDS"]
 
-        subgraph DSDC[Data Space Data Consumer]
+        subgraph DsDc["Data Space Consumer"]
             ConsumerApp("Consumer Application<br>/Tool"):::consumerApplication
-            subgraph DSConsumerDSC[Data Space Connector<br>Consumer]
-                ConsumerDSCiam(Identity Management and Authentication):::ConsumerDSC
-                ConsumerDSCmeta(Metadata Interaction ):::ConsumerDSC
-                ConsumerDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
-                ConsumerDSCdataExhange(Data Exchange Protocol Handling):::ConsumerDSC
-                ConsumerDSClog(Logging and Auditing):::ConsumerDSC
+            subgraph DSConsumerDSC["Data Space Connector<br>Consumer"]
+                ConsumerDSCiam("Identity Management and Authentication"):::ConsumerDSC
+                ConsumerDSCmeta("Metadata Interaction"):::ConsumerDSC
+                ConsumerDSCcontract("Contract Negotiation & Agreement"):::notImplementedDSC
+                ConsumerDSCdataExhange("Data Exchange Protocol Handling"):::ConsumerDSC
+                ConsumerDSClog("Logging and Auditing"):::ConsumerDSC
 
                 ConsumerDSCiam --- ConsumerDSCmeta
                 ConsumerDSCmeta --- ConsumerDSCcontract
@@ -18,11 +18,11 @@ graph TB
             end
         end
 
-        subgraph NDSP[Non registered Data Space user]
+        subgraph DsU["Non registered Data Space user"]
             User("Participant/<br>User"):::userDS
         end
 
-        subgraph FDSC[Federal Data Space Services]
+        subgraph FdSs["Federal Data Space Services"]
             RegPortal("Registration Portal"):::federalDS
             FedCatalog("Federated Catalog"):::federalDS
             IAM("Identity and Access<br>Management"):::federalDS
@@ -33,19 +33,18 @@ graph TB
             FedCatalog --- IAM
             IAM --- AuthZ
             AuthZ --- Logger
-
         end
 
-        subgraph DSDP[Data Space Data Provider]
+        subgraph DsDp["Data Space Provider"]
             ProviderApp("Provider Data Source<br>/System"):::providerApplication
             ProviderCatalog("Provider Data Catalog"):::providerApplication
-            subgraph DSProviderDSC[Data Space Connector<br>Provider]
-                ProviderDSCiam(Identity Management and Authentication):::providerDSC
-                ProviderDSCpep(Policy Enforcement Point - PEP):::providerDSC
-                ProviderDSCmeta(Metadata Interaction ):::providerDSC
-                ProviderDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
-                ProviderDSCdataExhange(Data Exchange Protocol Handling):::providerDSC
-                ProviderDSClog(Logging and Auditing):::providerDSC
+            subgraph DSProviderDSC["Data Space Connector<br>Provider"]
+                ProviderDSCiam("Identity Management and Authentication"):::providerDSC
+                ProviderDSCpep("Policy Enforcement Point - PEP"):::providerDSC
+                ProviderDSCmeta("Metadata Interaction"):::providerDSC
+                ProviderDSCcontract("Contract Negotiation & Agreement"):::notImplementedDSC
+                ProviderDSCdataExhange("Data Exchange Protocol Handling"):::providerDSC
+                ProviderDSClog("Logging and Auditing"):::providerDSC
 
                 ProviderDSCiam --- ProviderDSCpep
                 ProviderDSCpep --- ProviderDSCmeta
@@ -101,22 +100,44 @@ graph TB
         ProviderDSClog -- "Data space data transaction 18 - Log Transaction" --> Logger
         ConsumerDSClog -- "Data space data transaction 19 - Log Transaction" --> Logger
 
-        %% TODO: Styling once the schematic is in it's final phases.
-        
-        
-        %% Style Definitions for classes
-        classDef federalDS fill:#0099ff,stroke:#000000,stroke-width:2px,color:#0050b3
-        classDef providerApplication fill:#f6ffed,stroke:#000000,stroke-width:2px,color:#389e0d
-        classDef consumerApplication fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
+        %% Style Definitions
 
-        classDef providerDSC fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
-        classDef ConsumerDSC fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
-        classDef notImplementedDSC fill:#ff0000,stroke:#000000,stroke-width:2px,color:#000000
+        %% Style : TFDS MVDS
+        style TfdsMvds fill:#ffffff, color:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+    
+        %% Style : Federal Sata Space Services
+        style FdSs fill:#abdbe3, color:#000000, stroke: #000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Federal Sata Space Services components
+        classDef federalDS fill:#1e81b0, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
-        classDef userDS fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
+        %% Style : Data space unregistered user
+        style DsU fill:#96f291, color:#000000, stroke:#000000, strokeWidth:2, verticalAlign:top, fontStyle:1
+        %% Class definition : Data space unregistered user "components"
+        classDef userDS fill:#2df222, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+
+        %% Style : Data Space Provider
+        style DsDp fill:#eff587, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Style : Data Space Provider Data Space Connector
+        style DSProviderDSC fill:#ffffff, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Data Space Provider components
+        classDef providerDSC fill:#e7f502, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        %% Class definition : Data Space Provider Application
+        classDef providerApplication fill:#f6ffed, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+
+        %% Style : Data Space Consumer
+        style DsDc fill:#daa2f5, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Style : Data Space Consumer Data Space Connector
+        style DSConsumerDSC fill:#ffffff, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Data Space Consumer Data Space Connector components
+        classDef ConsumerDSC fill:#af25f5, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        %% Class definition : Data Space Consumer Application
+        classDef consumerApplication fill:#fffbe6, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+
+        %% Class definition : Data Space Connector components not planned
+        classDef notImplementedDSC fill:#ff0000, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
 
-        %% Style Definitions for graphs
-        %%style FDSC fill:#fffbe6, color:#000000,  strokeWidth: 2, verticalAlign: top, fontStyle:1
-    end
+        %% Style for linking lines
+        linkStyle default color:#ffffff, stroke:#000000, stroke-width:2px, fill:none
+    end 
 ```
