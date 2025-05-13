@@ -11,14 +11,14 @@ graph TB
                 ConsumerDSCdataExhange("Data Exchange Protocol Handling"):::ConsumerDSC
                 ConsumerDSClog("Logging and Auditing"):::ConsumerDSC
 
-                ConsumerDSCiam --- ConsumerDSCmeta
-                ConsumerDSCmeta --- ConsumerDSCcontract
-                ConsumerDSCcontract --- ConsumerDSCdataExhange
-                ConsumerDSCdataExhange --- ConsumerDSClog
+                %% ConsumerDSCiam --- ConsumerDSCmeta
+                %% ConsumerDSCmeta --- ConsumerDSCcontract
+                %% ConsumerDSCcontract --- ConsumerDSCdataExhange
+                %% ConsumerDSCdataExhange --- ConsumerDSClog
             end
         end
 
-        subgraph DsU["Non registered Data Space user"]
+        subgraph DsU["Unregistered user"]
             User("Participant/<br>User"):::userDS
         end
 
@@ -29,10 +29,10 @@ graph TB
             AuthZ("Authorization<br>Management"):::federalDS
             Logger("Transaction Logging"):::federalDS
 
-            RegPortal --- FedCatalog
-            FedCatalog --- IAM
-            IAM --- AuthZ
-            AuthZ --- Logger
+            %% RegPortal --- FedCatalog
+            %% FedCatalog --- IAM
+            %% IAM --- AuthZ
+            %% AuthZ --- Logger
         end
 
         subgraph DsDp["Data Space Provider"]
@@ -46,11 +46,11 @@ graph TB
                 ProviderDSCdataExhange("Data Exchange Protocol Handling"):::providerDSC
                 ProviderDSClog("Logging and Auditing"):::providerDSC
 
-                ProviderDSCiam --- ProviderDSCpep
-                ProviderDSCpep --- ProviderDSCmeta
-                ProviderDSCmeta --- ProviderDSCcontract
-                ProviderDSCcontract --- ProviderDSCdataExhange
-                ProviderDSCdataExhange --- ProviderDSClog
+                %% ProviderDSCiam --- ProviderDSCpep
+               %%  ProviderDSCpep --- ProviderDSCmeta
+                %% ProviderDSCmeta --- ProviderDSCcontract
+               %%  ProviderDSCcontract --- ProviderDSCdataExhange
+               %%  ProviderDSCdataExhange --- ProviderDSClog
             end
         end
 
