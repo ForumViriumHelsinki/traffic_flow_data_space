@@ -106,38 +106,39 @@ graph TB
         style TfdsMvds fill:#ffffff, color:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
     
         %% Style : Federal Sata Space Services
-        style FdSs fill:#abdbe3, color:#000000, stroke: #000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        style FdSs fill:#608bcf, color:#000000, stroke: #000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
         %% Class definition : Federal Sata Space Services components
-        classDef federalDS fill:#1e81b0, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef federalDS fill:#9dc384, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
         %% Style : Data space unregistered user
-        style DsU fill:#96f291, color:#000000, stroke:#000000, strokeWidth:2, verticalAlign:top, fontStyle:1
+        style DsU fill:#e0e782, color:#000000, stroke:#000000, strokeWidth:2, verticalAlign:top, fontStyle:1
         %% Class definition : Data space unregistered user "components"
-        classDef userDS fill:#2df222, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef userDS fill:#b7cd67, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
         %% Style : Data Space Provider
-        style DsDp fill:#eff587, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        style DsDp fill:#c9d7ef, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
         %% Style : Data Space Provider Data Space Connector
-        style DSProviderDSC fill:#ffffff, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        style DSProviderDSC fill:#65bdcc, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
         %% Class definition : Data Space Provider components
-        classDef providerDSC fill:#e7f502, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef providerDSC fill:#0f2c63, color:#ffffff, stroke:#000000, stroke-width:2px, fontStyle:1
         %% Class definition : Data Space Provider Application
-        classDef providerApplication fill:#f6ffed, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef providerApplication fill:#ebf1df, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
         %% Style : Data Space Consumer
-        style DsDc fill:#daa2f5, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        style DsDc fill:#c9d7ef, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
         %% Style : Data Space Consumer Data Space Connector
-        style DSConsumerDSC fill:#ffffff, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        style DSConsumerDSC fill:#65bdcc, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
         %% Class definition : Data Space Consumer Data Space Connector components
-        classDef ConsumerDSC fill:#af25f5, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef ConsumerDSC fill:#0f2c63, color:#ffffff, stroke:#000000, stroke-width:2px, fontStyle:1
         %% Class definition : Data Space Consumer Application
-        classDef consumerApplication fill:#fffbe6, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+        classDef consumerApplication fill:#ebf1df, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
         %% Class definition : Data Space Connector components not planned
         classDef notImplementedDSC fill:#ff0000, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
 
         %% Style for linking lines
-        linkStyle default color:#ffffff, stroke:#000000, stroke-width:2px, fill:none
+        linkStyle default color:#000000, stroke:#000000, stroke-width:2px, fill:none
+        classDef linkTextBox color:#ffffff, stroke:#000000, stroke-width:2px, fill:none
     end 
 ```
