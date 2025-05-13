@@ -1,15 +1,15 @@
 ```mermaid
-graph
-    subgraph "TFDS MVDS"
+graph TB
+    subgraph TfdsMvds["TFDS MVDS"]
 
-        subgraph DSDC[Data Space Data Consumer]
+        subgraph DsDc["Data Space Consumer"]
             ConsumerApp("Consumer Application<br>/Tool"):::consumerApplication
-            subgraph DSConsumerDSC[Data Space Connector<br>Consumer]
-                ConsumerDSCiam(Identity Management and Authentication):::ConsumerDSC
-                ConsumerDSCmeta(Metadata Interaction ):::ConsumerDSC
-                ConsumerDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
-                ConsumerDSCdataExhange(Data Exchange Protocol Handling):::ConsumerDSC
-                ConsumerDSClog(Logging and Auditing):::ConsumerDSC
+            subgraph DSConsumerDSC["Data Space Connector<br>Consumer"]
+                ConsumerDSCiam("Identity Management and Authentication"):::ConsumerDSC
+                ConsumerDSCmeta("Metadata Interaction"):::ConsumerDSC
+                ConsumerDSCcontract("Contract Negotiation & Agreement"):::notImplementedDSC
+                ConsumerDSCdataExhange("Data Exchange Protocol Handling"):::ConsumerDSC
+                ConsumerDSClog("Logging and Auditing"):::ConsumerDSC
 
                 ConsumerDSCiam --- ConsumerDSCmeta
                 ConsumerDSCmeta --- ConsumerDSCcontract
@@ -18,7 +18,7 @@ graph
             end
         end
 
-        subgraph FDSC[Federal Data Space Services]
+        subgraph FdSs["Federal Data Space Services"]
             RegPortal("Registration Portal"):::federalDS
             FedCatalog("Federated Catalog"):::federalDS
             IAM("Identity and Access<br>Management"):::federalDS
@@ -29,19 +29,18 @@ graph
             FedCatalog --- IAM
             IAM --- AuthZ
             AuthZ --- Logger
-
         end
 
-        subgraph DSDP[Data Space Data Provider]
+        subgraph DsDp["Data Space Provider"]
             ProviderApp("Provider Data Source<br>/System"):::providerApplication
             ProviderCatalog("Provider Data Catalog"):::providerApplication
-            subgraph DSProviderDSC[Data Space Connector<br>Provider]
-                ProviderDSCiam(Identity Management and Authentication):::providerDSC
-                ProviderDSCpep(Policy Enforcement Point - PEP):::providerDSC
-                ProviderDSCmeta(Metadata Interaction ):::providerDSC
-                ProviderDSCcontract(Contract Negotiation & Agreement ):::notImplementedDSC
-                ProviderDSCdataExhange(Data Exchange Protocol Handling):::providerDSC
-                ProviderDSClog(Logging and Auditing):::providerDSC
+            subgraph DSProviderDSC["Data Space Connector<br>Provider"]
+                ProviderDSCiam("Identity Management and Authentication"):::providerDSC
+                ProviderDSCpep("Policy Enforcement Point - PEP"):::providerDSC
+                ProviderDSCmeta("Metadata Interaction"):::providerDSC
+                ProviderDSCcontract("Contract Negotiation & Agreement"):::notImplementedDSC
+                ProviderDSCdataExhange("Data Exchange Protocol Handling"):::providerDSC
+                ProviderDSClog("Logging and Auditing"):::providerDSC
 
                 ProviderDSCiam --- ProviderDSCpep
                 ProviderDSCpep --- ProviderDSCmeta
@@ -50,6 +49,7 @@ graph
                 ProviderDSCdataExhange --- ProviderDSClog
             end
         end
+
         %% Data space transaction
 
         ConsumerApp -- "Data space data transaction 1 - Initiate Data Request" --> ConsumerDSCmeta
@@ -70,25 +70,60 @@ graph
         ProviderApp -- "Data space data transaction 15 - Provide Data" --> ProviderDSCdataExhange
         ProviderDSCdataExhange -- "Data space data transaction 16 - Send Data (e.g., DATEX II)" --> ConsumerDSCdataExhange
         ConsumerDSCdataExhange -- "Data space data transaction 17 - Forward Data" --> ConsumerApp
-        ProviderDSClog -- "Data space data transaction 18 - Log Transaction" --> Logger
-        ConsumerDSClog -- "Data space data transaction 19 - Log Transaction" --> Logger
+        ProviderDSCdataExhange -- "Data space data transaction 18 - Initiate Logging" --> ProviderDSClog
+        ConsumerDSCdataExhange -- "Data space data transaction 19 - Initiate Logging" --> ConsumerDSClog
+        ProviderDSClog -- "Data space data transaction 20 - Log Transaction" --> Logger
+        ConsumerDSClog -- "Data space data transaction 21 - Log Transaction" --> Logger
 
-        %% TODO: Styling once the schematic is in it's final phases.
-        
-        
-        %% Style Definitions for classes
-        classDef federalDS fill:#0099ff,stroke:#000000,stroke-width:2px,color:#0050b3
-        classDef providerApplication fill:#f6ffed,stroke:#000000,stroke-width:2px,color:#389e0d
-        classDef consumerApplication fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
+        %% Style Definitions
 
-        classDef providerDSC fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
-        classDef ConsumerDSC fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
-        classDef notImplementedDSC fill:#ff0000,stroke:#000000,stroke-width:2px,color:#000000
+        %% Style : TFDS MVDS
+        style TfdsMvds fill:#ffffff, color:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+    
+        %% Style : Federal Sata Space Services
+        style FdSs fill:#608bcf, color:#000000, stroke: #000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Federal Sata Space Services components
+        classDef federalDS fill:#9dc384, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
-        classDef userDS fill:#fffbe6,stroke:#000000,stroke-width:2px,color:#d48806
+        %% Style : Data Space Provider
+        style DsDp fill:#c9d7ef, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Style : Data Space Provider Data Space Connector
+        style DSProviderDSC fill:#65bdcc, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Data Space Provider components
+        classDef providerDSC fill:#0f2c63, color:#ffffff, stroke:#000000, stroke-width:2px, fontStyle:1
+        %% Class definition : Data Space Provider Application
+        classDef providerApplication fill:#ebf1df, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+
+        %% Style : Data Space Consumer
+        style DsDc fill:#c9d7ef, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Style : Data Space Consumer Data Space Connector
+        style DSConsumerDSC fill:#65bdcc, color:#000000, stroke:#000000, strokeWidth: 2, verticalAlign: top, fontStyle:1
+        %% Class definition : Data Space Consumer Data Space Connector components
+        classDef ConsumerDSC fill:#0f2c63, color:#ffffff, stroke:#000000, stroke-width:2px, fontStyle:1
+        %% Class definition : Data Space Consumer Application
+        classDef consumerApplication fill:#ebf1df, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
+
+        %% Class definition : Data Space Connector components not planned
+        classDef notImplementedDSC fill:#ff0000, color:#000000, stroke:#000000, stroke-width:2px, fontStyle:1
 
 
-        %% Style Definitions for graphs
-        %%style FDSC fill:#fffbe6, color:#000000,  strokeWidth: 2, verticalAlign: top, fontStyle:1
-    end
+        %% Style for linking lines
+        linkStyle default color:#000000, stroke:#000000, stroke-width:2px, fill:none
+        classDef linkTextBox color:#ffffff, stroke:#000000, stroke-width:2px, fill:none
+
+        %% Hide non arrow links, we want them grouped but with no visible lines.
+        linkStyle 0 stroke:none
+        linkStyle 1 stroke:none
+        linkStyle 2 stroke:none
+        linkStyle 3 stroke:none
+        linkStyle 4 stroke:none
+        linkStyle 5 stroke:none
+        linkStyle 6 stroke:none
+        linkStyle 7 stroke:none
+        linkStyle 8 stroke:none
+        linkStyle 9 stroke:none
+        linkStyle 10 stroke:none
+        linkStyle 11 stroke:none
+        linkStyle 12 stroke:none
+    end 
 ```
