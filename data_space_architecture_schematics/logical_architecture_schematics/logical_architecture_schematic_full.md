@@ -97,8 +97,10 @@ graph TB
         ProviderApp -- "Data space data transaction 15 - Provide Data" --> ProviderDSCdataExhange
         ProviderDSCdataExhange -- "Data space data transaction 16 - Send Data (e.g., DATEX II)" --> ConsumerDSCdataExhange
         ConsumerDSCdataExhange -- "Data space data transaction 17 - Forward Data" --> ConsumerApp
-        ProviderDSClog -- "Data space data transaction 18 - Log Transaction" --> Logger
-        ConsumerDSClog -- "Data space data transaction 19 - Log Transaction" --> Logger
+        ProviderDSCdataExhange -- "Data space data transaction 18 - Initiate Logging" --> ProviderDSClog
+        ConsumerDSCdataExhange -- "Data space data transaction 19 - Initiate Logging" --> ConsumerDSClog
+        ProviderDSClog -- "Data space data transaction 20 - Log Transaction" --> Logger
+        ConsumerDSClog -- "Data space data transaction 21 - Log Transaction" --> Logger
 
         %% Style Definitions
 
