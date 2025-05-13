@@ -140,5 +140,20 @@ graph TB
         %% Style for linking lines
         linkStyle default color:#000000, stroke:#000000, stroke-width:2px, fill:none
         classDef linkTextBox color:#ffffff, stroke:#000000, stroke-width:2px, fill:none
+
+        %% Hide non arrow links, we want them grouped but with no visible lines.
+        %% linkStyle 0 stroke:none
+        %% linkStyle 1 stroke:none
+        %% linkStyle 2 stroke:none
+        %% linkStyle 3 stroke:none
+        %% linkStyle 4 stroke:none
+        %% linkStyle 5 stroke:none
+        %% linkStyle 6 stroke:none
+        %% linkStyle 7 stroke:none
+        %% linkStyle 8 stroke:none
+        %% linkStyle 9 stroke:none
+        %% linkStyle 10 stroke:none
+        %% linkStyle 11 stroke:none
+        %% linkStyle 12 stroke:none
     end 
 ```
