@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # name of the currently deploying app in argocd, this is the name that will be displayed in ArgoCD
+  name: 'common01-deployer'
+spec:
+  project: default
+  source:
+    repoURL: 'https://code.europa.eu/api/v4/projects/951/packages/helm/stable'
+    path: '""'
+    targetRevision: 2.3.0                          # version of package
+    helm:
+      values: |
+        values:
+          branch: v2.3.0                            # branch of repo with values
+        resourcePreset: default                     # set to "low" to disable requests of resources
+        agentList:                                  # list of all the agents to be deployed
+          authorities:
+            - authority01
+          consumers:
+            - consumer01
+          providers:
+            - dataprovider01
+        project: default                            # Project to which the namespace is attached
+        namespaceTag: common01                      # identifier of deployment and part of fqdn
+        domainSuffix: ds.helsinki.tfds.io                   # last part of fqdn
+        argocd:
+          appname: common01                         # name of generated argocd app 
+          namespace: argocd                         # namespace of your argocd
+        cluster:
+          # FQDN Fully Qualified Domain Name of your kubernetes cluster
+          address: https://kubernetes.default.svc
+          namespace: common01                       # where the app will be deployed
+          issuer: dev-prod                          # issuer of certificate
+          kubeStateHost: kube-prometheus-stack-kube-state-metrics.devsecopstools.svc.cluster.local:8080    # link to kube-state-metrics svc
+        secrets:
+          secretEngine: example                     # name of the kv secret engine that will be created in OpenBao
+          role: example-role                        # name of the role that will be created in OpenBao
+        kafka:
+          ha: false                                  # true creates 3 replicas of each component, false creates 1 of each
+          topic:
+            # set this value to true, to have kafka creating automatically the required topics
+            autocreate: true
+        mailpit:
+          # set this value to true, to have mailpit activated
+          enabled: true
+        monitoring:
+          # set this value to true, to enable the monitoring features
+          enabled: true
+    # Name of the helm chart to deploy
+    chart: common_components
+  destination:
+    # FQDN Fully Qualified Domain Name of your kubernetes cluster
+    server: 'https://kubernetes.default.svc'
+    # Name of the Kubernetes NameSpace in which the Common Tools will be deployed
+    namespace: common01
