@@ -122,7 +122,7 @@ Begin by installing the Kubernetes control plane.
 
 ```
 # Set the desired k3s version (based on k8s 1.29)
-export K3S_VERSION="v1.29.5+k3s1"
+export K3S_VERSION="v1.30.14+k3s2"
 
 # Run the k3s installer
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -s - server \
@@ -147,7 +147,7 @@ Install the worker nodes using the control plane token.
 
 ```
 # Set the k3s version to match the server
-export K3S_VERSION="v1.29.5+k3s1"
+export K3S_VERSION="v1.30.14+k3s2"
 
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} \
     K3S_URL=192.168.220.175:6443 \

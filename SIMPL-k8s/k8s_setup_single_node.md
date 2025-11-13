@@ -39,9 +39,9 @@ chmod 700 get_helm.sh
 
 First, we install k3s itself. We use a version that corresponds to Kubernetes 1.29 and disable the built-in servicelb and traefik to use our own NGINX and MetalLB.
 
-### Set the desired k3s version (based on k8s 1.29)
+### Set the desired k3s version (based on k8s 1.29+)
 ```
-export K3S_VERSION="v1.29.5+k3s1"
+export K3S_VERSION="v1.30.14+k3s2"
 ```
 ### Run the k3s installer
 ```
