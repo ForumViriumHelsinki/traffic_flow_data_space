@@ -5,17 +5,17 @@ This guide details the setup of a Kubernetes cluster using k3s for a single node
 
 ## Requirements for SIMPL
 
-| Tool                   | Version | Notes         |
-|:-----------------------|:--------|:--------------|
-| **Kubernetes**         | 1.29.x  | Using k3s     |
-| **Git**                | 2.47.x+ |               |
-| **Helm**               | 3.14.x+ |               |
-| **LoadBalancer**       | N/A     | Using MetalLB |
-| **nginx-ingress**      | 1.10.x+ |               |
-| **cert-manager**       | 1.15.x+ |               |
-| **Argo CD**            | 2.11.x+ |               |
-| **nfs-provisioner**    | 4.0.x+  |               |
-| **kube-state-metrics** | 2.13.x+ |               |
+| Tool                   | Version | Notes            |
+|:-----------------------|:--------|:-----------------|
+| **Kubernetes**         | 1.29.x  | Using k3s, 1.30+ |
+| **Git**                | 2.47.x+ |                  |
+| **Helm**               | 3.14.x+ |                  |
+| **LoadBalancer**       | N/A     | Using MetalLB    |
+| **nginx-ingress**      | 1.10.x+ |                  |
+| **cert-manager**       | 1.15.x+ |                  |
+| **Argo CD**            | 2.11.x+ |                  |
+| **nfs-provisioner**    | 4.0.x+  |                  |
+| **kube-state-metrics** | 2.13.x+ |                  |
 
 ## Prerequisites (Server Setup)
 
@@ -172,7 +172,7 @@ Example:
 
 ```yaml
 type: LoadBalancer 
-loadBalancerIP: 192.168.220.175
+loadBalancerIP: <CONTROL_PLANE_IP>
 ```
 Wait for a moment and check that metalLB has provisioned the ingress controller with an IP address.
 
@@ -194,7 +194,7 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 
 #### Create staging
 
-Create a *luster-issuer-prod.yaml* configuration file.
+Create a *cluster-issuer-staging.yaml* configuration file.
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -262,7 +262,7 @@ Status:
 Events:                    <none>
 ```
 
-#### Create prod
+#### Create a certificate issuer
 
 Create *cluster-issuer-prod.yaml* configuration file.
 
@@ -291,6 +291,40 @@ Apply configuration
 ```
 kubectl apply -f cluster-issuer-prod.yaml
 ```
+
+#### Create dev-prod certificate issuer
+
+This is just for the SIMPL installation (default name they use), you can also use *cluster-issuer-prod* for this  
+but in all honesty I am lazy and just want to focus on the necessities in deployment configuration. 
+
+Create *dev-prod-issuer.yaml* configuration file.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: dev-prod
+spec:
+  acme:
+    email: "tatu.erkinjuntti@forumvirium.fi"
+
+    server: https://acme-v02.api.letsencrypt.org/directory
+
+    privateKeySecretRef:
+      name: dev-prod-account-key
+
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
+
+Apply configuration
+
+```
+kubectl apply -f dev-prod-issuer.yaml
+```
+
 
 ## Install ArgoCD
 
@@ -321,7 +355,7 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod" # Or "letsencrypt-staging" to testing
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
