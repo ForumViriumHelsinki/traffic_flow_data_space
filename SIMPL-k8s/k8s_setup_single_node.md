@@ -39,7 +39,7 @@ chmod 700 get_helm.sh
 
 First, we install k3s itself. We use a version that corresponds to Kubernetes 1.29 and disable the built-in servicelb and traefik to use our own NGINX and MetalLB.
 
-### Set the desired k3s version (based on k8s 1.29+)
+### Set the desired k3s version (based on k8s 1.30)
 ```
 export K3S_VERSION="v1.30.14+k3s2"
 ```
@@ -389,7 +389,10 @@ This service provides cluster-level metrics for monitoring.
 ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm install kube-state-metrics prometheus-community/kube-state-metrics --namespace kube-system --wait
+
+kubectl create namespace devsecopstools
+
+helm install kube-prometheus-stack-kube-state-metrics prometheus-community/kube-state-metrics --namespace devsecopstools --set fullnameOverride=kube-prometheus-stack-kube-state-metrics
 ```
 
 ## Check that all services are installed

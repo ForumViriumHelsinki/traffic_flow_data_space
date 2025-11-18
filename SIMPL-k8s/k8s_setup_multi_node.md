@@ -497,7 +497,10 @@ kubectl apply -f argocd-ingress.yaml
 ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-helm install kube-state-metrics prometheus-community/kube-state-metrics --namespace kube-system --wait
+
+kubectl create namespace devsecopstools
+
+helm install kube-prometheus-stack-kube-state-metrics prometheus-community/kube-state-metrics --namespace devsecopstools --set fullnameOverride=kube-prometheus-stack-kube-state-metrics
 ```
 
 ### Cheack services status
