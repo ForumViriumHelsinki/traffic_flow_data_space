@@ -45,7 +45,12 @@ export K3S_VERSION="v1.30.14+k3s2"
 ```
 ### Run the k3s installer
 ```
- curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -s - server --disable=servicelb --disable=traefik --write-kubeconfig-mode=644
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -s - server --disable=servicelb --disable=traefik --write-kubeconfig-mode=644
+```
+
+No versioning.
+```
+curl -sfL https://get.k3s.io | sh -s - server --disable=servicelb --disable=traefik --write-kubeconfig-mode=644
 ```
 
 ## Configure kubectl Access
@@ -192,110 +197,7 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 
 ### Configure certificate issuer
 
-#### Create staging
-
-Create a *cluster-issuer-staging.yaml* configuration file.
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-staging
-spec:
-  acme:
-    email: "tatu.erkinjuntti@forumvirium.fi"
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
-    privateKeySecretRef:
-      name: letsencrypt-staging-account-key
-
-    solvers:
-    - http01:
-        ingress:
-          # This matches the Ingress controller you have installed
-          class: nginx
-```
-
-Apply configuration
-```
-kubectl apply -f cluster-issuer-staging.yaml
-```
-Check that configuration is ready
-
-```
-kubectl describe clusterissuer letsencrypt-staging
-```
-
-Expected output. Look for a condition with *Type: Ready* and *Status: True*.
-```
-Name:         letsencrypt-staging
-Namespace:    
-Labels:       <none>
-Annotations:  <none>
-API Version:  cert-manager.io/v1
-Kind:         ClusterIssuer
-Metadata:
-  Creation Timestamp:  2025-11-13T13:22:01Z
-  Generation:          1
-  Resource Version:    2005
-  UID:                 864bb43a-fe5f-438c-b9cd-b5fadd1f78bc
-Spec:
-  Acme:
-    Email:  tatu.erkinjuntti@forumvirium.fi
-    Private Key Secret Ref:
-      Name:  letsencrypt-staging-account-key
-    Server:  https://acme-staging-v02.api.letsencrypt.org/directory
-    Solvers:
-      http01:
-        Ingress:
-          Class:  nginx
-Status:
-  Acme:
-    Last Private Key Hash:  vmKZIfudQn9HZh0SMQSTjsunutJCYV9FiGNo9e8tZCk=
-    Last Registered Email:  tatu.erkinjuntti@forumvirium.fi
-  Conditions:
-    Last Transition Time:  2025-11-13T13:22:02Z
-    Message:               The ACME account was registered with the ACME server
-    Observed Generation:   1
-    Reason:                ACMEAccountRegistered
-    Status:                True
-    Type:                  Ready
-Events:                    <none>
-```
-
-#### Create a certificate issuer
-
-Create *cluster-issuer-prod.yaml* configuration file.
-
-```
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    email: "tatu.erkinjuntti@forumvirium.fi"
-
-    server: https://acme-v02.api.letsencrypt.org/directory
-
-    privateKeySecretRef:
-      name: letsencrypt-prod-account-key
-
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-```
-
-Apply configuration
-
-```
-kubectl apply -f cluster-issuer-prod.yaml
-```
-
-#### Create dev-prod certificate issuer
-
-This is just for the SIMPL installation (default name they use), you can also use *cluster-issuer-prod* for this  
-but in all honesty I am lazy and just want to focus on the necessities in deployment configuration. 
+This is named after the the one used in the SIMPL installation (default name they use)
 
 Create *dev-prod-issuer.yaml* configuration file.
 
@@ -325,6 +227,32 @@ Apply configuration
 kubectl apply -f dev-prod-issuer.yaml
 ```
 
+Check that configuration is ready
+
+```
+kubectl describe clusterissuer dev-prod
+```
+
+### Configure a self-signed certificate issuer
+**NOTE:** This is related to the elka-CA, which issues certificates for internal services.
+This is noted in the deployment manifests.
+
+Create *self-signed-issuer.yaml* configuration file.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:                                                                                                                        
+  name: self-signed-issuer                                                                                                       
+spec:                                                                                                                            
+  selfSigned: {} 
+```
+
+Apply configuration
+
+```
+kubectl apply -f self-signed-issuer.yaml
+```
 
 ## Install ArgoCD
 
@@ -355,7 +283,7 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "dev-prod"
     
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -404,21 +332,21 @@ kubectl get svc -A
 **Expected output**
 
 ```
-NAMESPACE        NAME                                 TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                      AGE
-default          kubernetes                           ClusterIP      10.43.0.1       <none>         443/TCP                      10d
-kube-system      kube-dns                             ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP       10d
-kube-system      metrics-server                       ClusterIP      10.43.80.65     <none>         443/TCP                      10d
-metallb-system   metallb-webhook-service              ClusterIP      10.43.240.70    <none>         443/TCP                      10d
-ingress-nginx    ingress-nginx-controller-admission   ClusterIP      10.43.83.15     <none>         443/TCP                      10d
-ingress-nginx    ingress-nginx-controller             LoadBalancer   10.43.223.157   46.62.142.55   80:31807/TCP,443:32063/TCP   10d
-cert-manager     cert-manager-cainjector              ClusterIP      10.43.16.6      <none>         9402/TCP                     10d
-cert-manager     cert-manager-webhook                 ClusterIP      10.43.76.11     <none>         443/TCP,9402/TCP             10d
-cert-manager     cert-manager                         ClusterIP      10.43.54.169    <none>         9402/TCP                     10d
-argocd           argocd-applicationset-controller     ClusterIP      10.43.177.231   <none>         7000/TCP                     10d
-argocd           argocd-dex-server                    ClusterIP      10.43.100.250   <none>         5556/TCP,5557/TCP            10d
-argocd           argocd-redis                         ClusterIP      10.43.121.24    <none>         6379/TCP                     10d
-argocd           argocd-repo-server                   ClusterIP      10.43.93.82     <none>         8081/TCP                     10d
-kube-system      kube-state-metrics                   ClusterIP      10.43.149.89    <none>         8080/TCP                     10d
-argocd           argocd-server                        ClusterIP      10.43.230.107   <none>         80/TCP,443/TCP               10d
+NAMESPACE        NAME                                       TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                      AGE
+argocd           argocd-applicationset-controller           ClusterIP      10.43.135.102   <none>         7000/TCP                     6m8s
+argocd           argocd-dex-server                          ClusterIP      10.43.62.219    <none>         5556/TCP,5557/TCP            6m8s
+argocd           argocd-redis                               ClusterIP      10.43.155.37    <none>         6379/TCP                     6m8s
+argocd           argocd-repo-server                         ClusterIP      10.43.24.48     <none>         8081/TCP                     6m8s
+argocd           argocd-server                              ClusterIP      10.43.7.235     <none>         80/TCP,443/TCP               6m8s
+cert-manager     cert-manager                               ClusterIP      10.43.12.162    <none>         9402/TCP                     66m
+cert-manager     cert-manager-cainjector                    ClusterIP      10.43.247.133   <none>         9402/TCP                     66m
+cert-manager     cert-manager-webhook                       ClusterIP      10.43.115.13    <none>         443/TCP,9402/TCP             66m
+default          kubernetes                                 ClusterIP      10.43.0.1       <none>         443/TCP                      74m
+devsecopstools   kube-prometheus-stack-kube-state-metrics   ClusterIP      10.43.58.254    <none>         8080/TCP                     17s
+ingress-nginx    ingress-nginx-controller                   LoadBalancer   10.43.129.74    46.62.142.55   80:30550/TCP,443:31462/TCP   67m
+ingress-nginx    ingress-nginx-controller-admission         ClusterIP      10.43.23.12     <none>         443/TCP                      67m
+kube-system      kube-dns                                   ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP       74m
+kube-system      metrics-server                             ClusterIP      10.43.135.63    <none>         443/TCP                      74m
+metallb-system   metallb-webhook-service                    ClusterIP      10.43.11.63     <none>         443/TCP                      72m
 ```
 
