@@ -301,110 +301,7 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 
 #### Configure certificate issuer
 
-##### Create staging
-
-Create a *cluster-issuer-staging.yaml* configuration file.
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-staging
-spec:
-  acme:
-    email: "someone@somewhere.TLD"
-    server: https://acme-staging-v02.api.letsencrypt.org/directory
-    privateKeySecretRef:
-      name: letsencrypt-staging-account-key
-
-    solvers:
-    - http01:
-        ingress:
-          # This matches the Ingress controller you have installed
-          class: nginx
-```
-
-Apply configuration
-```
-kubectl apply -f cluster-issuer-staging.yaml
-```
-Check that configuration is ready
-
-```
-kubectl describe clusterissuer letsencrypt-staging
-```
-
-Expected output. Look for a condition with *Type: Ready* and *Status: True*.
-```
-Name:         letsencrypt-staging
-Namespace:    
-Labels:       <none>
-Annotations:  <none>
-API Version:  cert-manager.io/v1
-Kind:         ClusterIssuer
-Metadata:
-  Creation Timestamp:  2025-11-13T13:22:01Z
-  Generation:          1
-  Resource Version:    2005
-  UID:                 864bb43a-fe5f-438c-b9cd-b5fadd1f78bc
-Spec:
-  Acme:
-    Email:  someone@somewhere.TLD
-    Private Key Secret Ref:
-      Name:  letsencrypt-staging-account-key
-    Server:  https://acme-staging-v02.api.letsencrypt.org/directory
-    Solvers:
-      http01:
-        Ingress:
-          Class:  nginx
-Status:
-  Acme:
-    Last Private Key Hash:  vmKZIfudQn9HZh0SMQSTjsunutJCYV9FiGNo9e8tZCk=
-    Last Registered Email:  someone@somewhere.TLD
-  Conditions:
-    Last Transition Time:  2025-11-13T13:22:02Z
-    Message:               The ACME account was registered with the ACME server
-    Observed Generation:   1
-    Reason:                ACMEAccountRegistered
-    Status:                True
-    Type:                  Ready
-Events:                    <none>
-```
-
-#### Create a certificate issuer
-
-Create *cluster-issuer-prod.yaml* configuration file.
-
-```
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    email: "someone@somewhere.TLD"
-
-    server: https://acme-v02.api.letsencrypt.org/directory
-
-    privateKeySecretRef:
-      name: letsencrypt-prod-account-key
-
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-```
-
-Apply configuration
-
-```
-kubectl apply -f cluster-issuer-prod.yaml
-```
-
-#### Create dev-prod certificate issuer
-
-This is just for the SIMPL installation (default name they use), you can also use *cluster-issuer-prod* for this  
-but in all honesty I am lazy and just want to focus on the necessities in deployment configuration. 
+This is named after the the one used in the SIMPL installation (default name they use)
 
 Create *dev-prod-issuer.yaml* configuration file.
 
@@ -415,7 +312,7 @@ metadata:
   name: dev-prod
 spec:
   acme:
-    email: "someone@somewhere.TLD"
+    email: "tatu.erkinjuntti@forumvirium.fi"
 
     server: https://acme-v02.api.letsencrypt.org/directory
 
@@ -432,6 +329,33 @@ Apply configuration
 
 ```
 kubectl apply -f dev-prod-issuer.yaml
+```
+
+Check that configuration is ready
+
+```
+kubectl describe clusterissuer dev-prod
+```
+
+### Configure a self-signed certificate issuer
+**NOTE:** This is related to the elka-CA, which issues certificates for internal services.
+This is noted in the deployment manifests.
+
+Create *self-signed-issuer.yaml* configuration file.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:                                                                                                                        
+  name: self-signed-issuer                                                                                                       
+spec:                                                                                                                            
+  selfSigned: {} 
+```
+
+Apply configuration
+
+```
+kubectl apply -f self-signed-issuer.yaml
 ```
 
 ### Install ArgoCD
@@ -463,7 +387,7 @@ metadata:
   name: argocd-server-ingress
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: "dev-prod"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
