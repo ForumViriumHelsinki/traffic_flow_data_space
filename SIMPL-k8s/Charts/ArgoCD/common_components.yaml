@@ -12,7 +12,7 @@ spec:
       values: |
         values:
           branch: v2.3.2
-        resourcePreset: default
+        resourcePreset: low
         agentList:
           authorities:
             - authority01
@@ -30,18 +30,19 @@ spec:
           address: https://kubernetes.default.svc
           namespace: common01
           issuer: dev-prod
+          internalIssuer: self-signed-issuer
           kubeStateHost: kube-prometheus-stack-kube-state-metrics.devsecopstools.svc.cluster.local:8080
         secrets:
           secretEngine: example
           role: example-role
         kafka:
-          ha: true
+          ha: false
           topic:
             autocreate: true
         mailpit:
           enabled: true
         monitoring:
-          enabled: false
+          enabled: true
     chart: common_components
   destination:
     server: 'https://kubernetes.default.svc'

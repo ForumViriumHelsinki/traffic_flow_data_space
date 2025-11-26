@@ -15,9 +15,9 @@ spec:
         project: default
         namespaceTag: 
           authority: authority01
-          common: common0
+          common: common01
         domainSuffix: ds.helsinki.tfds.io
-        resourcePreset: default
+        resourcePreset: low
         argocd:
           appname: authority01
           namespace: argocd
@@ -26,11 +26,12 @@ spec:
           namespace: authority01
           commonToolsNamespace: common01
           issuer: dev-prod
+          internalIssuer: self-signed-issuer
         secrets:
           role: example-role
           secretEngine: example
         monitoring:
-          enabled: false
+          enabled: true
     chart: authority
   destination:
     server: 'https://kubernetes.default.svc'
