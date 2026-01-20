@@ -7,11 +7,11 @@ spec:
   source:
     repoURL: 'https://code.europa.eu/api/v4/projects/951/packages/helm/stable'
     path: '""'
-    targetRevision: 2.3.2
+    targetRevision: 2.4.1
     helm:
       values: |
         values:
-          branch: v2.3.2
+          branch: v2.4.1
         resourcePreset: low
         agentList:
           authorities:
