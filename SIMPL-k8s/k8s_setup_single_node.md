@@ -91,7 +91,7 @@ helm install metallb metallb/metallb --namespace metallb-system --create-namespa
 ```
 
 ### Configure MetalLB:  
-Create a file named *metallb-config.yaml* . **IMPORTANT:** Replace the <PUBLIC-IP> with the servers actual public IP address. **Note** That this example assumes that only a WAN IP is used, there for the subnet is /32 (255.255.255.255)(Only one address available)
+Create a file named *metallb-config.yaml* . **IMPORTANT:** Replace the <PUBLIC-IP> with the servers actual public IP address. **Note** That this example assumes that only a WAN IP is used, therefore the subnet is /32 (255.255.255.255)(Only one address available)
 
 ```yaml
 apiVersion: metallb.io/v1beta1
@@ -121,7 +121,7 @@ kubectl apply -f metallb-config.yaml
 
 ### Check cluster IP range
 
-**Note** *Single this is a single node setup (with only a WAN address), we are using the K3S cluster IP to map the NFS host.*
+**Note** *Since this is a single node setup (with only a WAN address), we are using the K3S cluster IP to map the NFS host.*
 ```shell
 ip a | grep 10.42
 ```
