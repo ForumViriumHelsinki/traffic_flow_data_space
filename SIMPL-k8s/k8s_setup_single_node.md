@@ -409,3 +409,109 @@ kube-system      metrics-server                             ClusterIP      10.43
 metallb-system   metallb-webhook-service                    ClusterIP      10.43.11.63     <none>         443/TCP                      72m
 ```
 
+# Optional: Deploy MinIO (For Provider and Consumer agents)
+
+MinIO provides S3-compatible object storage.  
+This deployment ensures MinIO is accessible internally for agents and externally via secure URLs,  
+utilizing the NFS storage class we configured earlier.
+
+Because we are using a GitOps architecture, we will deploy MinIO directly through ArgoCD rather than using manual Helm commands.
+
+**Note:** In the earlier examples the domain has been **ds.helsinki.tfds.io**, but since it is intended to be a Governance Authority,  
+in this example the idea.helsinki.tfds.io domain will be used (provider agent)
+
+### Create the ArgoCD Application Manifest
+
+### Create the Configuration File
+
+Because MinIO requires separate access for its API (S3 traffic) and its Console (Web UI), we need to define two separate subdomains and bypass NGINX's default upload limits.
+
+Create a file named *minio-argocd-app.yaml*  
+(Note: Replace s3.idea.helsinki.tfds.io and minio.idea.helsinki.tfds.io with your actual domain names, and change the default password and username!)
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://charts.min.io/'
+    chart: minio
+    targetRevision: "5.*" # The current stable major version of the official chart
+    helm:
+      valuesObject:
+        # Official MinIO Credentials
+        rootUser: "admin"
+        rootPassword: "SuperSecretPassword123!"
+
+        # Set to standalone since we are using an NFS backend
+        mode: standalone
+        replicas: 1
+
+        persistence:
+          enabled: true
+          storageClass: "nfs-client"
+          size: 50Gi
+
+        # Configuration for the S3 API (Used by Agents)
+        ingress:
+          enabled: true
+          ingressClassName: "nginx"
+          annotations:
+            cert-manager.io/cluster-issuer: "dev-prod"
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            nginx.ingress.kubernetes.io/proxy-body-size: "0" # CRITICAL: Disables upload limits
+          hosts:
+            - "s3.idea.helsinki.tfds.io"
+          tls:
+            - hosts:
+                - "s3.idea.helsinki.tfds.io"
+              secretName: minio-api-tls
+
+        # Configuration for the Web UI Console
+        consoleIngress:
+          enabled: true
+          ingressClassName: "nginx"
+          annotations:
+            cert-manager.io/cluster-issuer: "dev-prod"
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          hosts:
+            - "minio.idea.helsinki.tfds.io"
+          tls:
+            - hosts:
+                - "minio.idea.helsinki.tfds.io"
+              secretName: minio-console-tls
+
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: minio
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+### Deploy via ArgoCD
+
+Apply the manifest to tell ArgoCD to fetch, build, and deploy the application:
+
+```shell
+kubectl apply -f minio-argocd-app.yaml
+```
+You can now log into your ArgoCD Web UI, and you will see the minio application spinning up, provisioning its NFS storage, and requesting its SSL certificates automatically.
+
+### How to Access MinIO
+
+Once ArgoCD shows the application as fully Synced and Healthy, your Agents can interact with it using these endpoints:
+
+- Internal Cluster Access (Fastest, bypasses external network):
+  - Endpoint: http://minio.minio.svc.cluster.local:9000
+- External API Access (For external consumer/provider agents):
+  - Endpoint: https://s3.idea.helsinki.tfds.io
+- Web Console (For Human Administration):
+  - URL: https://minio.idea.helsinki.tfds.io
