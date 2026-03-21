@@ -427,7 +427,7 @@ in this example the idea.helsinki.tfds.io domain will be used (provider agent)
 Because MinIO requires separate access for its API (S3 traffic) and its Console (Web UI), we need to define two separate subdomains and bypass NGINX's default upload limits.
 
 Create a file named *minio-argocd-app.yaml*  
-(Note: Replace s3.idea.helsinki.tfds.io and minio.idea.helsinki.tfds.io with your actual domain names, and change the default password!)
+(Note: Replace s3.idea.helsinki.tfds.io and minio.idea.helsinki.tfds.io with your actual domain names, and change the default password and username!)
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -438,39 +438,53 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://charts.bitnami.com/bitnami'
+    repoURL: 'https://charts.min.io/'
     chart: minio
-    targetRevision: 14.6.0 # Pinned for stability
+    targetRevision: "5.*" # The current stable major version of the official chart
     helm:
       valuesObject:
-        auth:
-          rootUser: "admin"
-          rootPassword: "SuperSecretPassword123!"
+        # Official MinIO Credentials
+        rootUser: "admin"
+        rootPassword: "SuperSecretPassword123!"
+
+        # Set to standalone since we are using an NFS backend
+        mode: standalone
+        replicas: 1
+
         persistence:
           enabled: true
-          storageClass: "nfs-client" # Uses our verified RWX storage
-          size: 50Gi                 # Adjust based on your expected data load
+          storageClass: "nfs-client"
+          size: 50Gi
 
-        # Configuration for the Web UI Console
+        # Configuration for the S3 API (Used by Agents)
         ingress:
           enabled: true
           ingressClassName: "nginx"
-          hostname: "minio.idea.helsinki.tfds.io"
           annotations:
             cert-manager.io/cluster-issuer: "dev-prod"
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
-          tls: true
+            nginx.ingress.kubernetes.io/proxy-body-size: "0" # CRITICAL: Disables upload limits
+          hosts:
+            - "s3.idea.helsinki.tfds.io"
+          tls:
+            - hosts:
+                - "s3.idea.helsinki.tfds.io"
+              secretName: minio-api-tls
 
-        # Configuration for the S3 API (Used by Agents)
-        apiIngress:
+        # Configuration for the Web UI Console
+        consoleIngress:
           enabled: true
           ingressClassName: "nginx"
-          hostname: "s3.idea.helsinki.tfds.io"
           annotations:
             cert-manager.io/cluster-issuer: "dev-prod"
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
-            nginx.ingress.kubernetes.io/proxy-body-size: "0" # CRITICAL: Disables NGINX upload limits
-          tls: true
+          hosts:
+            - "minio.idea.helsinki.tfds.io"
+          tls:
+            - hosts:
+                - "minio.idea.helsinki.tfds.io"
+              secretName: minio-console-tls
+
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: minio
