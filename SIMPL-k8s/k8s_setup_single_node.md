@@ -5,17 +5,17 @@ This guide details the setup of a Kubernetes cluster using k3s for a single node
 
 ## Requirements for SIMPL
 
-| Tool                   | Version | Notes            |
-|:-----------------------|:--------|:-----------------|
-| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+ |
-| **Git**                | 2.47.x+ |                  |
-| **Helm**               | 4.x+    |                  |
-| **LoadBalancer**       | N/A     | Using MetalLB    |
-| **nginx-ingress**      | 1.10.x+ |                  |
-| **cert-manager**       | 1.15.x+ |                  |
-| **Argo CD**            | 2.11.x+ |                  |
-| **nfs-provisioner**    | 4.0.x+  |                  |
-| **kube-state-metrics** | 2.13.x+ |                  |
+| Tool                   | Version | Notes                           |
+|:-----------------------|:--------|:--------------------------------|
+| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+                |
+| **Git**                | 2.47.x+ |                                 |
+| **Helm**               | 4.x+    |                                 |
+| **LoadBalancer**       | N/A     | Using MetalLB                   |
+| **nginx-ingress**      | 1.10.x+ |                                 |
+| **cert-manager**       | 1.15.x+ |                                 |
+| **Argo CD**            | 2.11.x+ |                                 |
+| **nfs-provisioner**    | 4.0.x+  | Uses kvaps chart                |
+| **kube-state-metrics** | 2.13.x+ |                                 |
 
 ## Prerequisites (Server Setup)
 
@@ -25,7 +25,7 @@ Before installing k3s, we need to install helm (to manage applications) and git 
 ```shell
 Update apt and install git  
 sudo apt-get update  
-sudo apt-get install git \-y
+sudo apt-get install git -y
 ```
 
 ### Install Helm
@@ -46,11 +46,6 @@ export K3S_VERSION="v1.33.5+k3s1"
 ### Run the k3s installer
 ```shell
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=${K3S_VERSION} sh -s - server --disable=servicelb --disable=traefik --write-kubeconfig-mode=644
-```
-
-No versioning.
-```shell
-curl -sfL https://get.k3s.io | sh -s - server --disable=servicelb --disable=traefik --write-kubeconfig-mode=644
 ```
 
 ## Configure kubectl Access
@@ -117,64 +112,38 @@ spec:
 kubectl apply -f metallb-config.yaml
 ```
 
-## Set Up NFS for ReadWriteMany (RWM) Volumes
-
-### Check cluster IP range
-
-**Note** *Since this is a single node setup (with only a WAN address), we are using the K3S cluster IP to map the NFS host.*
-```shell
-ip a | grep 10.42
-```
-*Expected output: You should see an interface (like cni0 or flannel.1) with the IP 10.42.0.1. The guide below uses 10.42.0.1 and the 10.42.0.0/24 subnet. If yours is different, adjust the IPs in the following steps.*
+## Set Up NFS for ReadWriteMany (RWX) Volumes
 
 ### Install and Configure the NFS Server
 
-1. Update packages and install the NFS kernel server
-```shell
+1. Update apt and install required base packages
 sudo apt-get update  
-sudo apt-get install nfs-kernel-server -y
-```
-2. Create the physical directory that will hold your persistent data
-```shell
-sudo mkdir -p /mnt/nfs_share
-```
-3. Set permissive ownership and permissions so pods can write to it
-```shell
-sudo chown nobody:nogroup /mnt/nfs_share 
-sudo chmod 777 /mnt/nfs_share
-```
-4. Configure the export to ONLY allow traffic from the K3s internal subnet
-```shell
-echo "/mnt/nfs_share 10.42.0.0/24(rw,sync,no_subtree_check,no_root_squash)" | sudo tee /etc/exports
-```
-5. Apply the new export rules and restart the service
-```shell
-sudo exportfs -a
-sudo systemctl restart nfs-kernel-server
-```
+sudo apt-get install git nfs-common -y
 
 ### Deploy the NFS Provisioner via Helm
 
 1. Add the official Helm repository
 ```shell
-helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+helm repo add kvaps https://kvaps.github.io/charts
 helm repo update
 ```
 
 2. Install the provisioner.
 ```shell
-helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+helm install nfs-server kvaps/nfs-server-provisioner \
   --namespace nfs-provisioner \
   --create-namespace \
-  --set nfs.server=10.42.0.1 \
-  --set nfs.path=/mnt/nfs_share
+  --set persistence.enabled=true \
+  --set persistence.size=100Gi \
+  --set persistence.storageClass=local-path
 ```
+This will create a StorageClass named nfs-client that your applications can use for RWM volumes.
 
-### Make NFS the Default StorageClass (Recommended)
+### Ensure local-path Remains the Default StorageClass (recommended)
 
 ```shell
-kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
-kubectl patch storageclass nfs-client -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+kubectl patch storageclass nfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 ```
 
 #### Testing the setup
@@ -190,6 +159,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
+  storageClassName: nfs
   resources:
     requests:
       storage: 100Mi
@@ -200,33 +170,38 @@ metadata:
   name: test-nfs-pod
 spec:
   containers:
-  - name: test-container
-    image: busybox
-    command: [ "sh", "-c", "echo 'Storage is active!' > /data/success.txt && sleep 3600" ]
-    volumeMounts:
-    - name: nfs-volume
-      mountPath: /data
+    - name: test-container
+      image: busybox
+      command: [ "sh", "-c", "echo 'Storage is active!' > /data/success.txt && sleep 3600" ]
+      volumeMounts:
+        - name: nfs-volume
+          mountPath: /data
   volumes:
-  - name: nfs-volume
-    persistentVolumeClaim:
-      claimName: test-rwx-pvc
+    - name: nfs-volume
+      persistentVolumeClaim:
+        claimName: test-rwx-pvc
 ```
 
 Apply and check 
 
 ```shell
 kubectl apply -f test-nfs.yaml
+
+# Check if the PVC successfully grabbed a volume (Status should be 'Bound')
 kubectl get pvc test-rwx-pvc
-ls -l /mnt/nfs_share
+
+# Wait a moment, then check if the pod is running
+kubectl get pod test-nfs-pod
+
+kubectl exec test-nfs-pod -- cat /data/success.txt
 ```
 
+If everything is working perfectly, this will output: Storage is active!
 Once verified, clean up the test.
 
 ```shell
 kubectl delete -f test-nfs.yaml
 ```
-
-This will create a StorageClass named nfs-client that your applications can use for RWM volumes.
 
 ## Install NGINX Ingress Controller
 
@@ -407,6 +382,7 @@ ingress-nginx    ingress-nginx-controller-admission         ClusterIP      10.43
 kube-system      kube-dns                                   ClusterIP      10.43.0.10      <none>         53/UDP,53/TCP,9153/TCP       74m
 kube-system      metrics-server                             ClusterIP      10.43.135.63    <none>         443/TCP                      74m
 metallb-system   metallb-webhook-service                    ClusterIP      10.43.11.63     <none>         443/TCP                      72m
+nfs-provisioner   nfs-server-nfs-server-provisioner          ClusterIP      10.43.123.233   <none>         2049/TCP,2049/UDP,32803/TCP,32803/UDP,20048/TCP,20048/UDP,875/TCP,875/UDP,111/TCP,111/UDP,662/TCP,662/UDP   17h
 ```
 
 # Optional: Deploy MinIO (For Provider and Consumer agents)
@@ -419,6 +395,19 @@ Because we are using a GitOps architecture, we will deploy MinIO directly throug
 
 **Note:** In the earlier examples the domain has been **ds.helsinki.tfds.io**, but since it is intended to be a Governance Authority,  
 in this example the idea.helsinki.tfds.io domain will be used (provider agent)
+
+### Create a namespace and create secrets
+
+**Note:** Replace the *rootUser* and *rootPassword*
+
+```shell
+kubectl create namespace minio
+
+kubectl create secret generic minio-admin-credentials \
+  --namespace minio \
+  --from-literal=rootUser=admin \
+  --from-literal=rootPassword=SuperSecretPassword123!
+```
 
 ### Create the ArgoCD Application Manifest
 
@@ -443,9 +432,8 @@ spec:
     targetRevision: "5.*" # The current stable major version of the official chart
     helm:
       valuesObject:
-        # Official MinIO Credentials
-        rootUser: "admin"
-        rootPassword: "SuperSecretPassword123!"
+        # Reference to the Kubernetes Secret created previously
+        existingSecret: "minio-admin-credentials"
 
         # Set to standalone since we are using an NFS backend
         mode: standalone
@@ -453,8 +441,13 @@ spec:
 
         persistence:
           enabled: true
-          storageClass: "nfs-client"
+          storageClass: "nfs"
           size: 50Gi
+
+        # Informs MinIO of external URLs for presigned links and redirects
+        environment:
+          MINIO_SERVER_URL: "https://s3.idea.helsinki.tfds.io"
+          MINIO_BROWSER_REDIRECT_URL: "https://minio.idea.helsinki.tfds.io"
 
         # Configuration for the S3 API (Used by Agents)
         ingress:
@@ -463,7 +456,7 @@ spec:
           annotations:
             cert-manager.io/cluster-issuer: "dev-prod"
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
-            nginx.ingress.kubernetes.io/proxy-body-size: "0" # CRITICAL: Disables upload limits
+            nginx.ingress.kubernetes.io/proxy-body-size: "0" # Disables upload limits for agents
           hosts:
             - "s3.idea.helsinki.tfds.io"
           tls:
@@ -478,6 +471,7 @@ spec:
           annotations:
             cert-manager.io/cluster-issuer: "dev-prod"
             nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            nginx.ingress.kubernetes.io/proxy-body-size: "0" # Disables upload limits for the Web UI
           hosts:
             - "minio.idea.helsinki.tfds.io"
           tls:
