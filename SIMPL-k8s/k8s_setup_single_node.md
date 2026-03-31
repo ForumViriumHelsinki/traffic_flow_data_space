@@ -406,7 +406,7 @@ kubectl create namespace minio
 kubectl create secret generic minio-admin-credentials \
   --namespace minio \
   --from-literal=rootUser=admin \
-  --from-literal=rootPassword=SuperSecretPassword123!
+  --from-literal=rootPassword=<YOUR_SECURE_PASSWORD>
 ```
 
 ### Create the ArgoCD Application Manifest
