@@ -137,7 +137,7 @@ helm install nfs-server kvaps/nfs-server-provisioner \
   --set persistence.size=100Gi \
   --set persistence.storageClass=local-path
 ```
-This will create a StorageClass named nfs-client that your applications can use for RWM volumes.
+This will create a StorageClass named nfs that your applications can use for RWM volumes.
 
 ### Ensure local-path Remains the Default StorageClass (recommended)
 
