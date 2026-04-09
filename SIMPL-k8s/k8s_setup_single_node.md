@@ -39,6 +39,16 @@ chmod 700 get_helm.sh
 
 First, we install k3s itself. We use a version that corresponds to Kubernetes 1.29 and disable the built-in servicelb and traefik to use our own NGINX and MetalLB.
 
+### Increase OS-Level Limits (Required for Provider/Consumer Agents)
+Kubernetes controllers (like Argo Events and Crossplane) used by the data agents require a significant number of file watchers. Before installing k3s, increase the *inotify* limits to prevent pods from crashing with *too many open files* errors.
+
+```shell
+echo "fs.inotify.max_user_instances=8192" | sudo tee -a /etc/sysctl.conf
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+echo "fs.file-max=2097152" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
 ### Set the desired k3s version (based on k8s 1.3+)
 ```shell
 export K3S_VERSION="v1.33.5+k3s1"
@@ -85,7 +95,7 @@ helm repo update
 helm install metallb metallb/metallb --namespace metallb-system --create-namespace --wait
 ```
 
-### Configure MetalLB:  
+### Configure MetalLB:
 Create a file named *metallb-config.yaml* . **IMPORTANT:** Replace the <PUBLIC-IP> with the servers actual public IP address. **Note** That this example assumes that only a WAN IP is used, therefore the subnet is /32 (255.255.255.255)(Only one address available)
 
 ```yaml
@@ -96,7 +106,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - <PUBLIC-IP>/32
+    - <PUBLIC-IP>/32
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -105,7 +115,7 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
-  - default-pool
+    - default-pool
 ```
 **Apply the configuration:**
 ```shell
@@ -117,8 +127,10 @@ kubectl apply -f metallb-config.yaml
 ### Install and Configure the NFS Server
 
 1. Update apt and install required base packages
+```shell
 sudo apt-get update  
 sudo apt-get install git nfs-common -y
+```
 
 ### Deploy the NFS Provisioner via Helm
 
@@ -182,7 +194,7 @@ spec:
         claimName: test-rwx-pvc
 ```
 
-Apply and check 
+Apply and check
 
 ```shell
 kubectl apply -f test-nfs.yaml
@@ -250,9 +262,9 @@ spec:
       name: dev-prod-account-key
 
     solvers:
-    - http01:
-        ingress:
-          class: nginx
+      - http01:
+          ingress:
+            class: nginx
 ```
 
 Apply configuration
@@ -276,9 +288,9 @@ Create *self-signed-issuer.yaml* configuration file.
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
-metadata:                                                                                                                        
-  name: self-signed-issuer                                                                                                       
-spec:                                                                                                                            
+metadata:
+  name: self-signed-issuer
+spec:
   selfSigned: {} 
 ```
 
@@ -318,27 +330,27 @@ metadata:
   namespace: argocd
   annotations:
     cert-manager.io/cluster-issuer: "dev-prod"
-    
+
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   rules:
-  - host: argocd.ds.helsinki.tfds.io
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              name: https
-              
+    - host: argocd.ds.helsinki.tfds.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: https
+
   tls:
-  - hosts:
-    - argocd.ds.helsinki.tfds.io
-    secretName: argocd-server-tls
+    - hosts:
+        - argocd.ds.helsinki.tfds.io
+      secretName: argocd-server-tls
 ```
 Apply the configuration
 ```shell
