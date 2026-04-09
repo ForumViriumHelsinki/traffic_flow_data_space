@@ -39,8 +39,12 @@ chmod 700 get_helm.sh
 
 First, we install k3s itself. We use a version that corresponds to Kubernetes 1.29 and disable the built-in servicelb and traefik to use our own NGINX and MetalLB.
 
-### Increase OS-Level Limits (Required for Provider/Consumer Agents)
-Kubernetes controllers (like Argo Events and Crossplane) used by the data agents require a significant number of file watchers. Before installing k3s, increase the *inotify* limits to prevent pods from crashing with *too many open files* errors.
+### Increase OS-Level Limits (Optional: Only if enabling Crossplane Infrastructure Provisioning)
+If you intend to enable the **Infrastructure Provisioning Module** (`crossplane: enabled: true`) to allow the Data Agent to auto-provision external cloud environments (like OVH or IONOS), you must increase the host OS limits.
+
+The heavy GitOps controllers (Argo Events, FluxCD, Crossplane) require a significant number of file watchers. Before installing k3s, increase the `inotify` limits to prevent these specific pods from crashing with `too many open files` errors.
+
+*(Note: If you are deploying a standard Data Provider on a local vanilla k3s cluster without external cloud provisioning, you can skip this step).*
 
 ```shell
 echo "fs.inotify.max_user_instances=8192" | sudo tee -a /etc/sysctl.conf
@@ -106,7 +110,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    - <PUBLIC-IP>/32
+  - <PUBLIC-IP>/32
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -115,7 +119,7 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
-    - default-pool
+  - default-pool
 ```
 **Apply the configuration:**
 ```shell
@@ -127,10 +131,8 @@ kubectl apply -f metallb-config.yaml
 ### Install and Configure the NFS Server
 
 1. Update apt and install required base packages
-```shell
-sudo apt-get update  
-sudo apt-get install git nfs-common -y
-```
+   sudo apt-get update  
+   sudo apt-get install git nfs-common -y
 
 ### Deploy the NFS Provisioner via Helm
 
@@ -262,9 +264,9 @@ spec:
       name: dev-prod-account-key
 
     solvers:
-      - http01:
-          ingress:
-            class: nginx
+    - http01:
+        ingress:
+          class: nginx
 ```
 
 Apply configuration
@@ -288,9 +290,9 @@ Create *self-signed-issuer.yaml* configuration file.
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
-metadata:
-  name: self-signed-issuer
-spec:
+metadata:                                                                                                                        
+  name: self-signed-issuer                                                                                                       
+spec:                                                                                                                            
   selfSigned: {} 
 ```
 
