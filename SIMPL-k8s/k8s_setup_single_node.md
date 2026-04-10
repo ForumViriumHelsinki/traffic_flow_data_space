@@ -130,9 +130,11 @@ kubectl apply -f metallb-config.yaml
 
 ### Install and Configure the NFS Server
 
-1. Update apt and install required base packages
-   sudo apt-get update  
-   sudo apt-get install git nfs-common -y
+Update apt and install required base packages
+```shell
+sudo apt-get update  
+sudo apt-get install git nfs-common -y
+```
 
 ### Deploy the NFS Provisioner via Helm
 
