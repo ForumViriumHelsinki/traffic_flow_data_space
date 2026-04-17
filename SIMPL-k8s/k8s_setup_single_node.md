@@ -41,7 +41,7 @@ First, we install k3s itself. We use a version that corresponds to Kubernetes 1.
 
 ### Increase OS-Level Limits
 
-The heavy GitOps controllers require a significant number of file watchers. Before installing k3s on single node, increase the `inotify` limits to prevent these specific pods from crashing with `too many open files` errors.
+The heavy GitOps controllers require a significant number of file watchers. Before installing k3s, increase the `inotify` limits to prevent these specific pods from crashing with `too many open files` errors.
 
 ```shell
 echo "fs.inotify.max_user_instances=8192" | sudo tee -a /etc/sysctl.conf
