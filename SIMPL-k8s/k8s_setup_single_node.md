@@ -5,17 +5,17 @@ This guide details the setup of a Kubernetes cluster using k3s for a single node
 
 ## Requirements for SIMPL
 
-| Tool                   | Version | Notes                           |
-|:-----------------------|:--------|:--------------------------------|
-| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+                |
-| **Git**                | 2.47.x+ |                                 |
-| **Helm**               | 4.x+    |                                 |
-| **LoadBalancer**       | N/A     | Using MetalLB                   |
-| **nginx-ingress**      | 1.10.x+ |                                 |
-| **cert-manager**       | 1.15.x+ |                                 |
-| **Argo CD**            | 2.11.x+ |                                 |
-| **nfs-provisioner**    | 4.0.x+  | Uses kvaps chart                |
-| **kube-state-metrics** | 2.13.x+ |                                 |
+| Tool                   | Version | Notes             |
+|:-----------------------|:--------|:------------------|
+| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+  |
+| **Git**                | 2.47.x+ |                   |
+| **Helm**               | 4.x+    |                   |
+| **LoadBalancer**       | N/A     | Using MetalLB     |
+| **nginx-ingress**      | 1.10.x+ |                   |
+| **cert-manager**       | 1.15.x+ |                   |
+| **Argo CD**            | 2.11.x+ |                   |
+| **nfs-provisioner**    | 4.0.x+  | Using kvaps chart |
+| **kube-state-metrics** | 2.13.x+ |                   |
 
 ## Prerequisites (Server Setup)
 
