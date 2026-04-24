@@ -5,17 +5,17 @@ This guide details the setup of a Kubernetes cluster using k3s for a single node
 
 ## Requirements for SIMPL
 
-| Tool                   | Version | Notes                           |
-|:-----------------------|:--------|:--------------------------------|
-| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+                |
-| **Git**                | 2.47.x+ |                                 |
-| **Helm**               | 4.x+    |                                 |
-| **LoadBalancer**       | N/A     | Using MetalLB                   |
-| **nginx-ingress**      | 1.10.x+ |                                 |
-| **cert-manager**       | 1.15.x+ |                                 |
-| **Argo CD**            | 2.11.x+ |                                 |
-| **nfs-provisioner**    | 4.0.x+  | Uses kvaps chart                |
-| **kube-state-metrics** | 2.13.x+ |                                 |
+| Tool                   | Version | Notes             |
+|:-----------------------|:--------|:------------------|
+| **Kubernetes**         | 1.29.x  | Using k3s, 1.33+  |
+| **Git**                | 2.47.x+ |                   |
+| **Helm**               | 4.x+    |                   |
+| **LoadBalancer**       | N/A     | Using MetalLB     |
+| **nginx-ingress**      | 1.10.x+ |                   |
+| **cert-manager**       | 1.15.x+ |                   |
+| **Argo CD**            | 2.11.x+ |                   |
+| **nfs-provisioner**    | 4.0.x+  | Using kvaps chart |
+| **kube-state-metrics** | 2.13.x+ |                   |
 
 ## Prerequisites (Server Setup)
 
@@ -127,9 +127,11 @@ kubectl apply -f metallb-config.yaml
 
 ### Install and Configure the NFS Server
 
-1. Update apt and install required base packages
-   sudo apt-get update  
-   sudo apt-get install git nfs-common -y
+Update apt and install required base packages
+```shell
+sudo apt-get update  
+sudo apt-get install git nfs-common -y
+```
 
 ### Deploy the NFS Provisioner via Helm
 
@@ -218,16 +220,38 @@ kubectl delete -f test-nfs.yaml
 
 This will automatically ask MetalLB for the hosts public IP and bind it to ports 80/443.
 
+**Important:** The `--set controller.extraArgs.enable-ssl-passthrough=""` flag is strictly required for SIMPL. It allows the Ingress Controller to pass raw TLS connections directly to the Tier 2 Gateway for mTLS Participant Credential verification.
+
 ```shell
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --wait
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.extraArgs.enable-ssl-passthrough="true" \
+  --wait
 ```
 
 Wait for a moment and check that metalLB has provisioned the ingress controller (not the *ingress-nginx-controller-admission*) with an IP address.
 
 ```shell
 kubectl get svc -n ingress-nginx
+```
+
+### Update an Existing NGINX Installation (Optional)
+
+If you have already installed the NGINX Ingress Controller without the required `ssl-passthrough` flag, you do not need to reinstall it. You can apply a live patch to the deployment instead:
+
+```shell
+kubectl patch deployment -n ingress-nginx ingress-nginx-controller --type='json' -p='[
+  {"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--enable-ssl-passthrough"}
+]'
+```
+
+Wait for the controller to finish rolling out the new configuration:
+
+```shell
+kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
 ```
 
 ## Install Cert-Manager
