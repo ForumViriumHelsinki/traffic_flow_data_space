@@ -38,7 +38,7 @@ clone_repo() {
         echo -e "${YELLOW}[SKIP] $folder/$name already exists.${NC}"
     else
         echo -e "${GREEN}[CLONE] Cloning $name into $folder...${NC}"
-        git clone "$url" "$folder/$name"
+        git clone "$url" "$folder/$name" || { echo -e "${NC}[ERROR] Failed to clone $name"; exit 1; }
     fi
 }
 
