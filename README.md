@@ -2,7 +2,7 @@
 
 General repository for the Traffic Flow Data Space (TFDS) project. This project is carried out in collaboration with the city of Helsinki, Forum Virium Helsinki, Porto Digital and Nationaal Dataportaal Wegverkeer (NDW).
 
-The repository showcases the architectural designs, data production scripts, integration workflows, and visualization demonstrators developed for the TFDS initiative.
+The repository showcases the architectural designs,  Helsinki specific data production scripts, integration workflows, and visualization demonstrators developed for the TFDS Helsinki Pilot.
 
 ---
 
@@ -61,6 +61,7 @@ The following repositories represent integral outcomes of the TFDS project, cont
 
 ### Traffic Analysis & Dashboards (IDEA)
 
+*   **[IDEA open source](https://github.com/ndwdataquality/idea-open-source)**: The core IDEA algorithm provided to the project by Nationaal Dataportaal Wegverkeer (NDW). It contains the foundational Python code for generating traffic profiles from Floating Car Data (FCD) and validating the impact of roadworks, which is actively utilized by the IDEA-Helsinki implementation.
 *   **[IDEA-Helsinki](https://github.com/ForumViriumHelsinki/IDEA-Helsinki)**: A traffic validation system that analyzes the impact of traffic disturbances on road segments using real-time floating car data.
 *   **[TFDS_Dashboard](https://github.com/ForumViriumHelsinki/TFDS_Dashboard)**: A dashboard connected directly to InfluxDB for time-series data storage, analysis, and real-time visualization of floating car data and IDEA validated road segments. Along side the floating car data, the dashboard visualizes city air quality and a calculated air guality index (AQI), which indicates the changes altering traffic flow has on air quality.
 
