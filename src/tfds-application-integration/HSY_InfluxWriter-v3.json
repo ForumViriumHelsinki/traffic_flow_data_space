@@ -1,0 +1,328 @@
+{
+  "name": "projects/179156192201/locations/europe-north1/integrations/HSY_InfluxWriter/versions/2558927d-4ca4-4780-b7b3-c32944909384",
+  "updateTime": "2026-04-07T08:04:37.239Z",
+  "createTime": "2026-04-07T08:03:52.198Z",
+  "lastModifierEmail": "juho-pekka.virtanen@forumvirium.fi",
+  "triggerConfigs": [{
+    "label": "Private Trigger",
+    "startTasks": [{
+      "taskId": "1"
+    }],
+    "properties": {
+      "Trigger name": "HSY_InfluxWriter_Private_1"
+    },
+    "triggerType": "PRIVATE_TRIGGER",
+    "triggerNumber": "1",
+    "triggerId": "private_trigger/HSY_InfluxWriter_Private_1",
+    "position": {
+      "x": -421,
+      "y": -514
+    }
+  }],
+  "taskConfigs": [{
+    "task": "FieldMappingTask",
+    "taskId": "1",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"JSON_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$HSYFeatureJSON$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"properties\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"Mittausasema\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSYStationName$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"INT_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$HSYFeatureJSON$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"properties\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"Ilmanlaatuindeksi\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"TO_INT\"\n            }\n          }\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSYAirQualityIndex$\",\n      \"fieldType\": \"INT_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"INT_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$HSYFeatureJSON$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"properties\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"Mittausaseman_numero\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"TO_INT\"\n            }\n          }\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSYStationID$\",\n      \"fieldType\": \"INT_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "4"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Parse HSY Feature to variables",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -423,
+      "y": -419
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "2",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"literalValue\": {\n            \"stringValue\": \"ilmanlaatuindeksi,\"\n          }\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"Mittausaseman_numero\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$HSYStationID$\"\n            },\n            \"transformationFunctions\": [{\n              \"functionType\": {\n                \"intFunction\": {\n                  \"functionName\": \"TO_STRING\"\n                }\n              }\n            }]\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \",Mittausasema\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$HSYStationName$\"\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \" Ilmanlaatuindeksi\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$HSYAirQualityIndex$\"\n            },\n            \"transformationFunctions\": [{\n              \"functionType\": {\n                \"intFunction\": {\n                  \"functionName\": \"TO_STRING\"\n                }\n              }\n            }]\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$InfluxLineProtocolPayload$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "3"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Form String Protocol payload",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -423,
+      "y": -226
+    }
+  }, {
+    "task": "GenericRestV2Task",
+    "taskId": "3",
+    "parameters": {
+      "throwError": {
+        "key": "throwError",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "responseBody": {
+        "key": "responseBody",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_3_responseBody`$"]
+          }
+        }
+      },
+      "disableSSLValidation": {
+        "key": "disableSSLValidation",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "httpParams": {
+        "key": "httpParams",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"authorization\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$InfluxToken$\"\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"accept\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/json\"\n      }\n    }\n  }]\n}"
+        }
+      },
+      "authConfigName": {
+        "key": "authConfigName",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "responseHeader": {
+        "key": "responseHeader",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_3_responseHeader`$"]
+          }
+        }
+      },
+      "userAgent": {
+        "key": "userAgent",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "httpMethod": {
+        "key": "httpMethod",
+        "value": {
+          "stringValue": "POST"
+        }
+      },
+      "responseStatus": {
+        "key": "responseStatus",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_3_responseStatus`$"]
+          }
+        }
+      },
+      "timeout": {
+        "key": "timeout",
+        "value": {
+          "intValue": "30000"
+        }
+      },
+      "url": {
+        "key": "url",
+        "value": {
+          "stringValue": "$InfluxURL$"
+        }
+      },
+      "useSSL": {
+        "key": "useSSL",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "urlFetchingService": {
+        "key": "urlFetchingService",
+        "value": {
+          "stringValue": "HARPOON"
+        }
+      },
+      "urlQueryStrings": {
+        "key": "urlQueryStrings",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"orgID\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$InfluxOrgID$\"\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"bucket\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"idea-hsy-bucket\"\n      }\n    }\n  }]\n}"
+        }
+      },
+      "requestorId": {
+        "key": "requestorId",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "jsonAdditionalHeaders": {
+        "key": "jsonAdditionalHeaders",
+        "value": {
+          "jsonValue": "null"
+        }
+      },
+      "requestBody": {
+        "key": "requestBody",
+        "value": {
+          "stringValue": "$InfluxLineProtocolPayload$"
+        }
+      },
+      "followRedirects": {
+        "key": "followRedirects",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "additionalHeaders": {
+        "key": "additionalHeaders"
+      }
+    },
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Influx write",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -422,
+      "y": -137
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "4",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$HSYStationName$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"REPLACE_ALL\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \" \"\n              }\n            }\n          }, {\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\\ \"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"REPLACE_ALL\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \",\"\n              }\n            }\n          }, {\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\\,\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSYStationName$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "2"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Escape special characters in station name",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -423,
+      "y": -333
+    }
+  }],
+  "integrationParameters": [{
+    "key": "`ExecutionMode`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ExecutionMode`",
+    "isTransient": true
+  }, {
+    "key": "`ErrorInfo`",
+    "dataType": "JSON_VALUE",
+    "defaultValue": {
+      "jsonValue": "{\n  \"message\": \"\",\n  \"code\": 0.0\n}"
+    },
+    "displayName": "`ErrorInfo`",
+    "isTransient": true,
+    "jsonSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"code\": {\n      \"type\": \"number\"\n    },\n    \"message\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+  }, {
+    "key": "`ExecutionId`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ExecutionId`",
+    "isTransient": true
+  }, {
+    "key": "`IntegrationName`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`IntegrationName`",
+    "isTransient": true
+  }, {
+    "key": "`Region`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`Region`",
+    "isTransient": true
+  }, {
+    "key": "`ProjectId`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ProjectId`",
+    "isTransient": true
+  }, {
+    "key": "HSYFeatureJSON",
+    "dataType": "JSON_VALUE",
+    "displayName": "HSYFeatureJSON",
+    "inputOutputType": "IN"
+  }, {
+    "key": "HSYStationName",
+    "dataType": "STRING_VALUE",
+    "displayName": "HSYStationName"
+  }, {
+    "key": "HSYAirQualityIndex",
+    "dataType": "INT_VALUE",
+    "displayName": "HSYAirQualityIndex"
+  }, {
+    "key": "HSYStationID",
+    "dataType": "INT_VALUE",
+    "displayName": "HSYStationID"
+  }, {
+    "key": "InfluxLineProtocolPayload",
+    "dataType": "STRING_VALUE",
+    "displayName": "InfluxLineProtocolPayload"
+  }, {
+    "key": "`Task_3_responseHeader`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_3_responseHeader`",
+    "isTransient": true,
+    "producer": "1_3"
+  }, {
+    "key": "`Task_3_responseBody`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_3_responseBody`",
+    "isTransient": true,
+    "producer": "1_3"
+  }, {
+    "key": "`Task_3_responseStatus`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_3_responseStatus`",
+    "isTransient": true,
+    "producer": "1_3"
+  }, {
+    "key": "InfluxOrgID",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "6ea138dcfafd8b22"
+    },
+    "displayName": "InfluxOrgID"
+  }, {
+    "key": "InfluxToken",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "Token gosBfSSjMpTPjvJ_WUMZ8uaJjsh0lj2gWJ_EVQFO5607qD643YGtY4HoUHGhCOcb8NsT4Qo2amfnOsByKCHnnA\u003d\u003d"
+    },
+    "displayName": "InfluxToken",
+    "masked": true
+  }, {
+    "key": "InfluxURL",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "https://idea-helsinki-influxdb.dataportal.fi/api/v2/write"
+    },
+    "displayName": "InfluxURL"
+  }],
+  "databasePersistencePolicy": "DATABASE_PERSISTENCE_ASYNC",
+  "userLabel": "Updated influx URL"
+}

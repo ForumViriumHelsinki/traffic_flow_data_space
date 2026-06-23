@@ -1,0 +1,962 @@
+{
+  "name": "projects/179156192201/locations/europe-north1/integrations/TFDS-AirQuality-Worker/versions/c3d202f8-f74c-4e19-8e05-def5dac940fd",
+  "updateTime": "2026-04-07T08:11:23.555Z",
+  "createTime": "2026-04-07T08:10:45.606Z",
+  "lastModifierEmail": "juho-pekka.virtanen@forumvirium.fi",
+  "triggerConfigs": [{
+    "label": "Launch worker",
+    "startTasks": [{
+      "taskId": "1"
+    }],
+    "properties": {
+      "Trigger name": "TFDS-AirQuality-Worker_Trigger"
+    },
+    "triggerType": "PRIVATE_TRIGGER",
+    "triggerNumber": "1",
+    "triggerId": "private_trigger/TFDS-AirQuality-Worker_Trigger",
+    "position": {
+      "x": -176,
+      "y": -352
+    }
+  }],
+  "taskConfigs": [{
+    "task": "FieldMappingTask",
+    "taskId": "1",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"JSON_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$task$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"hsy-station\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$hsy-station$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"JSON_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$task$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"segment\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$segment-id$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "2"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Parse config input",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -176,
+      "y": -286
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "12",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$`Task_7_responseBody`$\"\n        }\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$influxStringCurrent$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "8"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Map to variables",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -288,
+      "y": 510
+    }
+  }, {
+    "task": "GenericRestV2Task",
+    "taskId": "13",
+    "parameters": {
+      "throwError": {
+        "key": "throwError",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "responseBody": {
+        "key": "responseBody",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_13_responseBody`$"]
+          }
+        }
+      },
+      "disableSSLValidation": {
+        "key": "disableSSLValidation",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "httpParams": {
+        "key": "httpParams",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"accept\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/csv\"\n      }\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"content-type\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/vnd.flux\"\n      }\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"authorization\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxToken$\"\n    }\n  }]\n}"
+        }
+      },
+      "authConfigName": {
+        "key": "authConfigName",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "responseHeader": {
+        "key": "responseHeader",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_13_responseHeader`$"]
+          }
+        }
+      },
+      "userAgent": {
+        "key": "userAgent",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "httpMethod": {
+        "key": "httpMethod",
+        "value": {
+          "stringValue": "POST"
+        }
+      },
+      "responseStatus": {
+        "key": "responseStatus",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_13_responseStatus`$"]
+          }
+        }
+      },
+      "timeout": {
+        "key": "timeout",
+        "value": {
+          "intValue": "30000"
+        }
+      },
+      "url": {
+        "key": "url",
+        "value": {
+          "stringValue": "$influxURL$"
+        }
+      },
+      "useSSL": {
+        "key": "useSSL",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "urlFetchingService": {
+        "key": "urlFetchingService",
+        "value": {
+          "stringValue": "HARPOON"
+        }
+      },
+      "urlQueryStrings": {
+        "key": "urlQueryStrings",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"orgID\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxOrgID$\"\n    }\n  }]\n}"
+        }
+      },
+      "requestorId": {
+        "key": "requestorId",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "jsonAdditionalHeaders": {
+        "key": "jsonAdditionalHeaders",
+        "value": {
+          "jsonValue": "null"
+        }
+      },
+      "requestBody": {
+        "key": "requestBody",
+        "value": {
+          "stringValue": "$influxQueryTypical$"
+        }
+      },
+      "followRedirects": {
+        "key": "followRedirects",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "additionalHeaders": {
+        "key": "additionalHeaders"
+      }
+    },
+    "nextTasks": [{
+      "taskId": "14"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Get influx data (Typical)",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -7,
+      "y": 416
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "14",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$`Task_13_responseBody`$\"\n        }\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$influxStringTypical$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "15"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Map to variables",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -7,
+      "y": 505
+    }
+  }, {
+    "task": "JavaScriptTask",
+    "taskId": "15",
+    "parameters": {
+      "javaScriptEngine": {
+        "key": "javaScriptEngine",
+        "value": {
+          "stringValue": "V8"
+        }
+      },
+      "script": {
+        "key": "script",
+        "value": {
+          "stringValue": "/**\n * Function that is called during the JavaScript Task execution.\n * @param {IntegrationEvent} event\n */\nfunction executeScript(event) {\n  // Get the response header from the event.\n  var responseHeader \u003d event.getParameter(\"influxStringTypical\");\n\n  // Check if the responseHeader is not null or empty.\n  if (responseHeader) {\n    try {\n      // Parse the CSV response header to JSON.\n      var jsonResponseHeader \u003d csvToJson(responseHeader);\n\n      // Set the parsed JSON response header to the event.\n      event.setParameter(\"influxJSONTypical\", jsonResponseHeader);\n    } catch (error) {\n      // Log the error message.\n      event.log(\"Error parsing CSV to JSON: \" + error.message);\n    }\n  } else {\n    // Log a message if the response header is null or empty.\n    event.log(\"Response header is null or empty.\");\n  }\n\n  /**\n   * Function to convert CSV data to JSON format.\n   * @param {string} csv CSV data to convert.\n   * @returns {object} JSON object representing the CSV data.\n   */\n  function csvToJson(csv) {\n    const lines \u003d csv.split(\u0027\\n\u0027);\n    const headers \u003d lines[0].split(\u0027,\u0027);\n    const json \u003d [];\n\n    for (let i \u003d 1; i \u003c lines.length; i++) {\n      const data \u003d lines[i].split(\u0027,\u0027);\n      const obj \u003d {};\n\n      for (let j \u003d 0; j \u003c headers.length; j++) {\n        obj[headers[j].trim()] \u003d data[j] ? data[j].trim() : \u0027\u0027;\n      }\n\n      json.push(obj);\n    }\n\n    return json;\n  }\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "9"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Parse influx CSV",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -5,
+      "y": 604
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "16",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$hsy-station$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"REPLACE_ALL\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \" \"\n              }\n            }\n          }, {\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\\ \"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"REPLACE_ALL\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \",\"\n              }\n            }\n          }, {\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\\,\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$hsy-station$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"literalValue\": {\n            \"stringValue\": \"aqi,\"\n          }\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"segment\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$segment-id$\"\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \",stationName\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$hsy-station$\"\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \" aqi\\u003d\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$TFDS-AQI$\"\n            },\n            \"transformationFunctions\": [{\n              \"functionType\": {\n                \"doubleFunction\": {\n                  \"functionName\": \"TO_STRING\"\n                }\n              }\n            }]\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$influxWriteRow$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "17"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Prepare influx line protocol",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": 14,
+      "y": 899
+    }
+  }, {
+    "task": "GenericRestV2Task",
+    "taskId": "17",
+    "parameters": {
+      "throwError": {
+        "key": "throwError",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "responseBody": {
+        "key": "responseBody",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_17_responseBody`$"]
+          }
+        }
+      },
+      "disableSSLValidation": {
+        "key": "disableSSLValidation",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "httpParams": {
+        "key": "httpParams",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"accept\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/json\"\n      }\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"authorization\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxToken$\"\n    }\n  }]\n}"
+        }
+      },
+      "authConfigName": {
+        "key": "authConfigName",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "responseHeader": {
+        "key": "responseHeader",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_17_responseHeader`$"]
+          }
+        }
+      },
+      "userAgent": {
+        "key": "userAgent",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "httpMethod": {
+        "key": "httpMethod",
+        "value": {
+          "stringValue": "POST"
+        }
+      },
+      "responseStatus": {
+        "key": "responseStatus",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_17_responseStatus`$"]
+          }
+        }
+      },
+      "timeout": {
+        "key": "timeout",
+        "value": {
+          "intValue": "30000"
+        }
+      },
+      "url": {
+        "key": "url",
+        "value": {
+          "stringValue": "$influxWriteURL$"
+        }
+      },
+      "useSSL": {
+        "key": "useSSL",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "urlFetchingService": {
+        "key": "urlFetchingService",
+        "value": {
+          "stringValue": "HARPOON"
+        }
+      },
+      "urlQueryStrings": {
+        "key": "urlQueryStrings",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"orgID\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxOrgID$\"\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"bucket\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"idea-tfds-aqi\"\n      }\n    }\n  }]\n}"
+        }
+      },
+      "requestorId": {
+        "key": "requestorId",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "jsonAdditionalHeaders": {
+        "key": "jsonAdditionalHeaders",
+        "value": {
+          "jsonValue": "null"
+        }
+      },
+      "requestBody": {
+        "key": "requestBody",
+        "value": {
+          "stringValue": "$influxWriteRow$"
+        }
+      },
+      "followRedirects": {
+        "key": "followRedirects",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "additionalHeaders": {
+        "key": "additionalHeaders"
+      }
+    },
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Write influx data",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": 14,
+      "y": 1015
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "2",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"literalValue\": {\n            \"stringValue\": \"tfds-air-quality\"\n          }\n        }\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$`Task_3_connectorInputPayload`.Bucket$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"literalValue\": {\n            \"stringValue\": \"current/airQualityCurrent.json\"\n          }\n        }\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$`Task_3_connectorInputPayload`.ObjectFilePath$\",\n      \"fieldType\": \"JSON_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "3"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Prepare bucket read",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -173,
+      "y": -135
+    }
+  }, {
+    "task": "GenericConnectorTask",
+    "taskId": "3",
+    "parameters": {
+      "connectorInputPayload": {
+        "key": "connectorInputPayload",
+        "value": {
+          "stringValue": "$`Task_3_connectorInputPayload`$"
+        }
+      },
+      "authOverrideEnabled": {
+        "key": "authOverrideEnabled",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "connectionName": {
+        "key": "connectionName",
+        "value": {
+          "stringValue": "projects/fvh-project-containers-etc/locations/europe-north1/connections/tfds-connector"
+        }
+      },
+      "connectorOutputPayload": {
+        "key": "connectorOutputPayload",
+        "value": {
+          "stringValue": "$`Task_3_connectorOutputPayload`$"
+        }
+      },
+      "operation": {
+        "key": "operation",
+        "value": {
+          "stringValue": "EXECUTE_ACTION"
+        }
+      },
+      "connectionVersion": {
+        "key": "connectionVersion",
+        "value": {
+          "stringValue": "projects/fvh-project-containers-etc/locations/global/providers/gcp/connectors/gcs/versions/1"
+        }
+      },
+      "actionName": {
+        "key": "actionName",
+        "value": {
+          "stringValue": "DownloadObject"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "4"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Read HSY data from bucket",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -172,
+      "y": -58
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "4",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"JSON_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$`Task_3_connectorOutputPayload`$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_ELEMENT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"intValue\": \"0\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"Content\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSY-current-string$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"JSON_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$HSY-current-string$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"TO_JSON\"\n            }\n          }\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$HSY-current-json$\",\n      \"fieldType\": \"JSON_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "5"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Parse HSY from bucket",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -173,
+      "y": 13
+    }
+  }, {
+    "task": "JavaScriptTask",
+    "taskId": "5",
+    "parameters": {
+      "javaScriptEngine": {
+        "key": "javaScriptEngine",
+        "value": {
+          "stringValue": "V8"
+        }
+      },
+      "script": {
+        "key": "script",
+        "value": {
+          "stringValue": "function executeScript(event) {\n  var hsyCurrentJson \u003d event.getParameter(\"HSY-current-json\");\n  var hsyStation \u003d event.getParameter(\"hsy-station\");\n  var features \u003d hsyCurrentJson.features;\n  var airQualityValue \u003d null;\n\n  if (features \u0026\u0026 Array.isArray(features)) {\n    for (var i \u003d 0; i \u003c features.length; i++) {\n      var feature \u003d features[i];\n      if (feature.properties \u0026\u0026 feature.properties.Mittausasema \u003d\u003d\u003d hsyStation) {\n        airQualityValue \u003d feature.properties.Ilmanlaatuindeksi;\n        break;\n      }\n    }\n  }\n\n  if (airQualityValue !\u003d\u003d null) {\n    event.setParameter(\"CurrentAirQualityValue\", airQualityValue);\n  } else {\n    event.log(\"No matching station found or Ilmanlaatuindeksi is null.\");\n  }\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "6"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Extract Air Quality Value",
+    "description": "Extracts air quality from JSON.",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -170,
+      "y": 126
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "6",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$influxQueryTemplateCurrent$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$segment-id$\"\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\")\\n  |\\u003e last()\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$influxQueryCurrent$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"STRING_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$influxQueryTemplateTypical$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$segment-id$\"\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"stringFunction\": {\n              \"functionName\": \"CONCAT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"\\\")\\n  |\\u003e last()\"\n              }\n            }\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$influxQueryTypical$\",\n      \"fieldType\": \"STRING_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "7"
+    }, {
+      "taskId": "13"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Prepare influx queries",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -174,
+      "y": 266
+    }
+  }, {
+    "task": "GenericRestV2Task",
+    "taskId": "7",
+    "parameters": {
+      "throwError": {
+        "key": "throwError",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "responseBody": {
+        "key": "responseBody",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_7_responseBody`$"]
+          }
+        }
+      },
+      "disableSSLValidation": {
+        "key": "disableSSLValidation",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "httpParams": {
+        "key": "httpParams",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"accept\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/csv\"\n      }\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"content-type\"\n      }\n    },\n    \"value\": {\n      \"literalValue\": {\n        \"stringValue\": \"application/vnd.flux\"\n      }\n    }\n  }, {\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"authorization\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxToken$\"\n    }\n  }]\n}"
+        }
+      },
+      "authConfigName": {
+        "key": "authConfigName",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "responseHeader": {
+        "key": "responseHeader",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_7_responseHeader`$"]
+          }
+        }
+      },
+      "userAgent": {
+        "key": "userAgent",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "httpMethod": {
+        "key": "httpMethod",
+        "value": {
+          "stringValue": "POST"
+        }
+      },
+      "responseStatus": {
+        "key": "responseStatus",
+        "value": {
+          "stringArray": {
+            "stringValues": ["$`Task_7_responseStatus`$"]
+          }
+        }
+      },
+      "timeout": {
+        "key": "timeout",
+        "value": {
+          "intValue": "30000"
+        }
+      },
+      "url": {
+        "key": "url",
+        "value": {
+          "stringValue": "$influxURL$"
+        }
+      },
+      "useSSL": {
+        "key": "useSSL",
+        "value": {
+          "booleanValue": false
+        }
+      },
+      "urlFetchingService": {
+        "key": "urlFetchingService",
+        "value": {
+          "stringValue": "HARPOON"
+        }
+      },
+      "urlQueryStrings": {
+        "key": "urlQueryStrings",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.ParameterMap\",\n  \"entries\": [{\n    \"key\": {\n      \"literalValue\": {\n        \"stringValue\": \"orgID\"\n      }\n    },\n    \"value\": {\n      \"referenceKey\": \"$influxOrgID$\"\n    }\n  }]\n}"
+        }
+      },
+      "requestorId": {
+        "key": "requestorId",
+        "value": {
+          "stringValue": ""
+        }
+      },
+      "jsonAdditionalHeaders": {
+        "key": "jsonAdditionalHeaders",
+        "value": {
+          "jsonValue": "null"
+        }
+      },
+      "requestBody": {
+        "key": "requestBody",
+        "value": {
+          "stringValue": "$influxQueryCurrent$"
+        }
+      },
+      "followRedirects": {
+        "key": "followRedirects",
+        "value": {
+          "booleanValue": true
+        }
+      },
+      "additionalHeaders": {
+        "key": "additionalHeaders"
+      }
+    },
+    "nextTasks": [{
+      "taskId": "12"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Get influx data (Current)",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -289,
+      "y": 419
+    }
+  }, {
+    "task": "JavaScriptTask",
+    "taskId": "8",
+    "parameters": {
+      "javaScriptEngine": {
+        "key": "javaScriptEngine",
+        "value": {
+          "stringValue": "V8"
+        }
+      },
+      "script": {
+        "key": "script",
+        "value": {
+          "stringValue": "/**\n * Function that is called during the JavaScript Task execution.\n * @param {IntegrationEvent} event\n */\nfunction executeScript(event) {\n  // Get the response header from the event.\n  var responseHeader \u003d event.getParameter(\"influxStringCurrent\");\n\n  // Check if the responseHeader is not null or empty.\n  if (responseHeader) {\n    try {\n      // Parse the CSV response header to JSON.\n      var jsonResponseHeader \u003d csvToJson(responseHeader);\n\n      // Set the parsed JSON response header to the event.\n      event.setParameter(\"influxJSONCurrent\", jsonResponseHeader);\n    } catch (error) {\n      // Log the error message.\n      event.log(\"Error parsing CSV to JSON: \" + error.message);\n    }\n  } else {\n    // Log a message if the response header is null or empty.\n    event.log(\"Response header is null or empty.\");\n  }\n\n  /**\n   * Function to convert CSV data to JSON format.\n   * @param {string} csv CSV data to convert.\n   * @returns {object} JSON object representing the CSV data.\n   */\n  function csvToJson(csv) {\n    const lines \u003d csv.split(\u0027\\n\u0027);\n    const headers \u003d lines[0].split(\u0027,\u0027);\n    const json \u003d [];\n\n    for (let i \u003d 1; i \u003c lines.length; i++) {\n      const data \u003d lines[i].split(\u0027,\u0027);\n      const obj \u003d {};\n\n      for (let j \u003d 0; j \u003c headers.length; j++) {\n        obj[headers[j].trim()] \u003d data[j] ? data[j].trim() : \u0027\u0027;\n      }\n\n      json.push(obj);\n    }\n\n    return json;\n  }\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "9"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Parse influx CSV",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -286,
+      "y": 600
+    }
+  }, {
+    "task": "FieldMappingTask",
+    "taskId": "9",
+    "parameters": {
+      "FieldMappingConfigTaskParameterKey": {
+        "key": "FieldMappingConfigTaskParameterKey",
+        "value": {
+          "jsonValue": "{\n  \"@type\": \"type.googleapis.com/enterprise.crm.eventbus.proto.FieldMappingConfig\",\n  \"mappedFields\": [{\n    \"inputField\": {\n      \"fieldType\": \"INT_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$influxJSONCurrent$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_ELEMENT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"intValue\": \"0\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"_value\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"TO_INT\"\n            }\n          }\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$SegmentCurrentSpeed$\",\n      \"fieldType\": \"INT_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"INT_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$influxJSONTypical$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_ELEMENT\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"intValue\": \"0\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"GET_PROPERTY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"literalValue\": {\n                \"stringValue\": \"_value\"\n              }\n            }\n          }]\n        }, {\n          \"functionType\": {\n            \"jsonFunction\": {\n              \"functionName\": \"TO_INT\"\n            }\n          }\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$SegmentTypicalSpeed$\",\n      \"fieldType\": \"INT_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }, {\n    \"inputField\": {\n      \"fieldType\": \"DOUBLE_VALUE\",\n      \"transformExpression\": {\n        \"initialValue\": {\n          \"referenceValue\": \"$SegmentTypicalSpeed$\"\n        },\n        \"transformationFunctions\": [{\n          \"functionType\": {\n            \"intFunction\": {\n              \"functionName\": \"TO_DOUBLE\"\n            }\n          }\n        }, {\n          \"functionType\": {\n            \"doubleFunction\": {\n              \"functionName\": \"DIVIDE\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$SegmentCurrentSpeed$\"\n            },\n            \"transformationFunctions\": [{\n              \"functionType\": {\n                \"intFunction\": {\n                  \"functionName\": \"TO_DOUBLE\"\n                }\n              }\n            }]\n          }]\n        }, {\n          \"functionType\": {\n            \"doubleFunction\": {\n              \"functionName\": \"MULTIPLY\"\n            }\n          },\n          \"parameters\": [{\n            \"initialValue\": {\n              \"referenceValue\": \"$CurrentAirQualityValue$\"\n            },\n            \"transformationFunctions\": [{\n              \"functionType\": {\n                \"intFunction\": {\n                  \"functionName\": \"TO_DOUBLE\"\n                }\n              }\n            }]\n          }]\n        }]\n      }\n    },\n    \"outputField\": {\n      \"referenceKey\": \"$TFDS-AQI$\",\n      \"fieldType\": \"DOUBLE_VALUE\",\n      \"cardinality\": \"OPTIONAL\"\n    }\n  }]\n}"
+        }
+      }
+    },
+    "nextTasks": [{
+      "taskId": "16"
+    }],
+    "taskExecutionStrategy": "WHEN_ALL_SUCCEED",
+    "displayName": "Extract \u0026 compute",
+    "externalTaskType": "NORMAL_TASK",
+    "position": {
+      "x": -167,
+      "y": 744
+    }
+  }],
+  "integrationParameters": [{
+    "key": "`ExecutionMode`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ExecutionMode`",
+    "isTransient": true
+  }, {
+    "key": "`ErrorInfo`",
+    "dataType": "JSON_VALUE",
+    "defaultValue": {
+      "jsonValue": "{\n  \"message\": \"\",\n  \"code\": 0.0\n}"
+    },
+    "displayName": "`ErrorInfo`",
+    "isTransient": true,
+    "jsonSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"code\": {\n      \"type\": \"number\"\n    },\n    \"message\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+  }, {
+    "key": "`ExecutionId`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ExecutionId`",
+    "isTransient": true
+  }, {
+    "key": "`IntegrationName`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`IntegrationName`",
+    "isTransient": true
+  }, {
+    "key": "`Region`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`Region`",
+    "isTransient": true
+  }, {
+    "key": "`ProjectId`",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": ""
+    },
+    "displayName": "`ProjectId`",
+    "isTransient": true
+  }, {
+    "key": "hsy-station",
+    "dataType": "STRING_VALUE",
+    "displayName": "hsy-station"
+  }, {
+    "key": "segment-id",
+    "dataType": "STRING_VALUE",
+    "displayName": "segment-id"
+  }, {
+    "key": "task",
+    "dataType": "JSON_VALUE",
+    "displayName": "task",
+    "inputOutputType": "IN"
+  }, {
+    "key": "`Task_3_connectorInputPayload`",
+    "dataType": "JSON_VALUE",
+    "displayName": "`Task_3_connectorInputPayload`",
+    "producer": "1_3",
+    "jsonSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"ObjectFilePath\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Object name for the object that should be retrieved. If not specified, all the objects from the specified bucket will be retrieved.\",\n      \"properties\": {\n      }\n    },\n    \"HasBytes\": {\n      \"type\": [\"boolean\", \"null\"],\n      \"description\": \"Whether to download content as bytes.\",\n      \"properties\": {\n      }\n    },\n    \"UpdatedEndDate\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"The end of the date range to download objects. If not specified, objects will be downloaded from the specified UpdatedStartDate until the present day.\",\n      \"properties\": {\n      }\n    },\n    \"UpdatedStartDate\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"The start of the date range to download objects. If not specified, objects will be downloaded from the beginning of the time until the UpdatedEndDate.\",\n      \"properties\": {\n      }\n    },\n    \"Bucket\": {\n      \"type\": \"string\",\n      \"description\": \"Bucket name where the object is located.\",\n      \"properties\": {\n      }\n    }\n  }\n}"
+  }, {
+    "key": "`Task_3_connectorOutputPayload`",
+    "dataType": "JSON_VALUE",
+    "displayName": "`Task_3_connectorOutputPayload`",
+    "isTransient": true,
+    "producer": "1_3",
+    "jsonSchema": "{\n  \"type\": \"array\",\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"items\": {\n    \"type\": \"object\",\n    \"properties\": {\n    },\n    \"$schema\": \"http://json-schema.org/draft-07/schema#\"\n  }\n}"
+  }, {
+    "key": "HSY-current-string",
+    "dataType": "STRING_VALUE",
+    "displayName": "HSY-current-string"
+  }, {
+    "key": "HSY-current-json",
+    "dataType": "JSON_VALUE",
+    "displayName": "HSY-current-json"
+  }, {
+    "key": "matchingFeature",
+    "dataType": "JSON_VALUE",
+    "displayName": "matchingFeature"
+  }, {
+    "key": "influxOrgID",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "6ea138dcfafd8b22"
+    },
+    "displayName": "influxOrgID"
+  }, {
+    "key": "`Task_7_responseHeader`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_7_responseHeader`",
+    "isTransient": true,
+    "producer": "1_7"
+  }, {
+    "key": "`Task_7_responseBody`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_7_responseBody`",
+    "isTransient": true,
+    "producer": "1_7"
+  }, {
+    "key": "`Task_7_responseStatus`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_7_responseStatus`",
+    "isTransient": true,
+    "producer": "1_7"
+  }, {
+    "key": "SegmentCurrentSpeed",
+    "dataType": "INT_VALUE",
+    "displayName": "SegmentCurrentSpeed"
+  }, {
+    "key": "TFDS-LogEntry",
+    "dataType": "STRING_VALUE",
+    "displayName": "TFDS-LogEntry"
+  }, {
+    "key": "CurrentAirQualityValue",
+    "dataType": "INT_VALUE",
+    "defaultValue": {
+      "intValue": "0"
+    },
+    "displayName": "CurrentAirQualityValue"
+  }, {
+    "key": "influxQueryCurrent",
+    "dataType": "STRING_VALUE",
+    "displayName": "influxQueryCurrent"
+  }, {
+    "key": "influxQueryTypical",
+    "dataType": "STRING_VALUE",
+    "displayName": "influxQueryTypical"
+  }, {
+    "key": "`Task_13_responseHeader`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_13_responseHeader`",
+    "isTransient": true,
+    "producer": "1_13"
+  }, {
+    "key": "`Task_13_responseBody`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_13_responseBody`",
+    "isTransient": true,
+    "producer": "1_13"
+  }, {
+    "key": "`Task_13_responseStatus`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_13_responseStatus`",
+    "isTransient": true,
+    "producer": "1_13"
+  }, {
+    "key": "influxStringCurrent",
+    "dataType": "STRING_VALUE",
+    "displayName": "influxStringCurrent"
+  }, {
+    "key": "influxStringTypical",
+    "dataType": "STRING_VALUE",
+    "displayName": "influxStringTypical"
+  }, {
+    "key": "influxJSONCurrent",
+    "dataType": "JSON_VALUE",
+    "displayName": "influxJSONCurrent"
+  }, {
+    "key": "influxJSONTypical",
+    "dataType": "JSON_VALUE",
+    "displayName": "influxJSONTypical"
+  }, {
+    "key": "SegmentTypicalSpeed",
+    "dataType": "INT_VALUE",
+    "displayName": "SegmentTypicalSpeed"
+  }, {
+    "key": "TFDS-AQI",
+    "dataType": "DOUBLE_VALUE",
+    "displayName": "TFDS-AQI"
+  }, {
+    "key": "`Task_17_responseHeader`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_17_responseHeader`",
+    "isTransient": true,
+    "producer": "1_17"
+  }, {
+    "key": "`Task_17_responseBody`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_17_responseBody`",
+    "isTransient": true,
+    "producer": "1_17"
+  }, {
+    "key": "`Task_17_responseStatus`",
+    "dataType": "STRING_VALUE",
+    "displayName": "`Task_17_responseStatus`",
+    "isTransient": true,
+    "producer": "1_17"
+  }, {
+    "key": "influxWriteRow",
+    "dataType": "STRING_VALUE",
+    "displayName": "influxWriteRow"
+  }, {
+    "key": "influxToken",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "Token YCNTQPOt7jVbIHvjBqZirTsdgnEWTWbxDpnILmG40p8b3EB6A4zA-rC5-u04lLgqQjMpLwVq4a1bgEhYyMIsWg\u003d\u003d"
+    },
+    "displayName": "influxToken"
+  }, {
+    "key": "influxQueryTemplateCurrent",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "from(bucket: \"idea-fcd-bucket\")\n  |\u003e range(start: -15m)\n  |\u003e filter(fn: (r) \u003d\u003e r[\"_measurement\"] \u003d\u003d \"segment_data\")\n  |\u003e filter(fn: (r) \u003d\u003e r[\"_field\"] \u003d\u003d \"currentSpeed\")\n  |\u003e filter(fn: (r) \u003d\u003e r[\"segmentId\"] \u003d\u003d \""
+    },
+    "displayName": "influxQueryTemplateCurrent"
+  }, {
+    "key": "influxQueryTemplateTypical",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "from(bucket: \"idea-fcd-bucket\")\n  |\u003e range(start: -15m)\n  |\u003e filter(fn: (r) \u003d\u003e r[\"_measurement\"] \u003d\u003d \"segment_data\")\n  |\u003e filter(fn: (r) \u003d\u003e r[\"_field\"] \u003d\u003d \"typicalSpeed\")\n  |\u003e filter(fn: (r) \u003d\u003e r[\"segmentId\"] \u003d\u003d \""
+    },
+    "displayName": "influxQueryTemplateTypical"
+  }, {
+    "key": "influxWriteURL",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "https://idea-helsinki-influxdb.dataportal.fi/api/v2/write"
+    },
+    "displayName": "influxWriteURL"
+  }, {
+    "key": "influxURL",
+    "dataType": "STRING_VALUE",
+    "defaultValue": {
+      "stringValue": "https://idea-helsinki-influxdb.dataportal.fi/api/v2/query"
+    },
+    "displayName": "influxURL"
+  }],
+  "databasePersistencePolicy": "DATABASE_PERSISTENCE_ASYNC",
+  "userLabel": "Updated influx URL"
+}

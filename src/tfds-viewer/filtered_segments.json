@@ -1,0 +1,1205 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89912,
+          60.20792
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666211606528",
+        "currentSpeed": 9,
+        "typicalSpeed": 37,
+        "speedRatio": 0.24324324324324326
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.8993,
+          60.20792
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666211639296",
+        "currentSpeed": 9,
+        "typicalSpeed": 38,
+        "speedRatio": 0.23684210526315788
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89502,
+          60.20823
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666212360193",
+        "currentSpeed": 11,
+        "typicalSpeed": 46,
+        "speedRatio": 0.2391304347826087
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89531,
+          60.20819
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666212491264",
+        "currentSpeed": 11,
+        "typicalSpeed": 46,
+        "speedRatio": 0.2391304347826087
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89565,
+          60.20814
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666212622336",
+        "currentSpeed": 11,
+        "typicalSpeed": 46,
+        "speedRatio": 0.2391304347826087
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89003,
+          60.20911
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666243162112",
+        "currentSpeed": 7,
+        "typicalSpeed": 31,
+        "speedRatio": 0.22580645161290322
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88997,
+          60.20913
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666243194880",
+        "currentSpeed": 7,
+        "typicalSpeed": 32,
+        "speedRatio": 0.21875
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89433,
+          60.20833
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666243293185",
+        "currentSpeed": 11,
+        "typicalSpeed": 46,
+        "speedRatio": 0.2391304347826087
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89611,
+          60.20808
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666737893376",
+        "currentSpeed": 11,
+        "typicalSpeed": 45,
+        "speedRatio": 0.24444444444444444
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89879,
+          60.20815
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666865164289",
+        "currentSpeed": 8,
+        "typicalSpeed": 35,
+        "speedRatio": 0.22857142857142856
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.89893,
+          60.20814
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474666865328129",
+        "currentSpeed": 8,
+        "typicalSpeed": 35,
+        "speedRatio": 0.22857142857142856
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88204,
+          60.21825
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735305064448",
+        "currentSpeed": 7,
+        "typicalSpeed": 32,
+        "speedRatio": 0.21875
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88341,
+          60.21616
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735372173312",
+        "currentSpeed": 7,
+        "typicalSpeed": 37,
+        "speedRatio": 0.1891891891891892
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88322,
+          60.21646
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735372435456",
+        "currentSpeed": 7,
+        "typicalSpeed": 46,
+        "speedRatio": 0.15217391304347827
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88346,
+          60.21608
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735372533760",
+        "currentSpeed": 7,
+        "typicalSpeed": 31,
+        "speedRatio": 0.22580645161290322
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88289,
+          60.21702
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735836921856",
+        "currentSpeed": 7,
+        "typicalSpeed": 53,
+        "speedRatio": 0.1320754716981132
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.88256,
+          60.2175
+        ]
+      },
+      "properties": {
+        "segmentId": "1195474735836954624",
+        "currentSpeed": 7,
+        "typicalSpeed": 53,
+        "speedRatio": 0.1320754716981132
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97309,
+          60.16526
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141197557760",
+        "currentSpeed": 7,
+        "typicalSpeed": 29,
+        "speedRatio": 0.2413793103448276
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97375,
+          60.16547
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141197590528",
+        "currentSpeed": 7,
+        "typicalSpeed": 31,
+        "speedRatio": 0.22580645161290322
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.90764,
+          60.16415
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141319618560",
+        "currentSpeed": 6,
+        "typicalSpeed": 26,
+        "speedRatio": 0.23076923076923078
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91565,
+          60.16181
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141338394624",
+        "currentSpeed": 0,
+        "typicalSpeed": 23,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91563,
+          60.16199
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141338394625",
+        "currentSpeed": 0,
+        "typicalSpeed": 18,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91569,
+          60.16164
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141338624000",
+        "currentSpeed": 0,
+        "typicalSpeed": 23,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91565,
+          60.16181
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141338624001",
+        "currentSpeed": 0,
+        "typicalSpeed": 22,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91631,
+          60.16073
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141338853376",
+        "currentSpeed": 0,
+        "typicalSpeed": 23,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9157,
+          60.16153
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141339803648",
+        "currentSpeed": 0,
+        "typicalSpeed": 22,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91569,
+          60.16164
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141339803649",
+        "currentSpeed": 0,
+        "typicalSpeed": 22,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91576,
+          60.16116
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141339836416",
+        "currentSpeed": 0,
+        "typicalSpeed": 22,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91576,
+          60.16116
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141339836417",
+        "currentSpeed": 0,
+        "typicalSpeed": 22,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94789,
+          60.19507
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141381779456",
+        "currentSpeed": 0,
+        "typicalSpeed": 24,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94824,
+          60.19485
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141381943297",
+        "currentSpeed": 0,
+        "typicalSpeed": 26,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.95408,
+          60.1931
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141383647232",
+        "currentSpeed": 7,
+        "typicalSpeed": 32,
+        "speedRatio": 0.21875
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.95272,
+          60.1926
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141383843840",
+        "currentSpeed": 7,
+        "typicalSpeed": 30,
+        "speedRatio": 0.23333333333333334
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9476,
+          60.19661
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427032064",
+        "currentSpeed": 0,
+        "typicalSpeed": 21,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94753,
+          60.19701
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427064832",
+        "currentSpeed": 0,
+        "typicalSpeed": 27,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94759,
+          60.19708
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427097600",
+        "currentSpeed": 0,
+        "typicalSpeed": 17,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94829,
+          60.19765
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427130368",
+        "currentSpeed": 0,
+        "typicalSpeed": 6,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94848,
+          60.19783
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427163136",
+        "currentSpeed": 0,
+        "typicalSpeed": 4,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94634,
+          60.19749
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427228673",
+        "currentSpeed": 6,
+        "typicalSpeed": 33,
+        "speedRatio": 0.18181818181818182
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94597,
+          60.1973
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427294209",
+        "currentSpeed": 6,
+        "typicalSpeed": 32,
+        "speedRatio": 0.1875
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94561,
+          60.19714
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427359745",
+        "currentSpeed": 6,
+        "typicalSpeed": 26,
+        "speedRatio": 0.23076923076923078
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94753,
+          60.19818
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141427425281",
+        "currentSpeed": 6,
+        "typicalSpeed": 31,
+        "speedRatio": 0.1935483870967742
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91541,
+          60.18234
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141485064192",
+        "currentSpeed": 7,
+        "typicalSpeed": 38,
+        "speedRatio": 0.18421052631578946
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91541,
+          60.18269
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141485096960",
+        "currentSpeed": 7,
+        "typicalSpeed": 33,
+        "speedRatio": 0.21212121212121213
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91546,
+          60.1818
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141485195264",
+        "currentSpeed": 8,
+        "typicalSpeed": 42,
+        "speedRatio": 0.19047619047619047
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91543,
+          60.18201
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141485228032",
+        "currentSpeed": 7,
+        "typicalSpeed": 40,
+        "speedRatio": 0.175
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97267,
+          60.18825
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141547847681",
+        "currentSpeed": 0,
+        "typicalSpeed": 21,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97302,
+          60.18849
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141548404737",
+        "currentSpeed": 0,
+        "typicalSpeed": 15,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9731,
+          60.18857
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141548437505",
+        "currentSpeed": 0,
+        "typicalSpeed": 18,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97061,
+          60.18808
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141549780992",
+        "currentSpeed": 0,
+        "typicalSpeed": 9,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.96783,
+          60.18919
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141550862337",
+        "currentSpeed": 4,
+        "typicalSpeed": 31,
+        "speedRatio": 0.12903225806451613
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.9439,
+          60.19567
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141619904512",
+        "currentSpeed": 5,
+        "typicalSpeed": 27,
+        "speedRatio": 0.18518518518518517
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91557,
+          60.16236
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141863337984",
+        "currentSpeed": 0,
+        "typicalSpeed": 20,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91557,
+          60.16236
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141863337985",
+        "currentSpeed": 0,
+        "typicalSpeed": 21,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91555,
+          60.16251
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141863501824",
+        "currentSpeed": 0,
+        "typicalSpeed": 16,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91553,
+          60.16265
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141863501825",
+        "currentSpeed": 0,
+        "typicalSpeed": 20,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97136,
+          60.18817
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141867008001",
+        "currentSpeed": 0,
+        "typicalSpeed": 31,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97111,
+          60.18815
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141867040769",
+        "currentSpeed": 0,
+        "typicalSpeed": 31,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97158,
+          60.18819
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141870743553",
+        "currentSpeed": 0,
+        "typicalSpeed": 35,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97285,
+          60.18832
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141887291393",
+        "currentSpeed": 0,
+        "typicalSpeed": 15,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.97279,
+          60.18827
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141887324161",
+        "currentSpeed": 0,
+        "typicalSpeed": 19,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.96449,
+          60.18966
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141889159169",
+        "currentSpeed": 4,
+        "typicalSpeed": 21,
+        "speedRatio": 0.19047619047619047
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94739,
+          60.1981
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141916717057",
+        "currentSpeed": 6,
+        "typicalSpeed": 30,
+        "speedRatio": 0.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.94707,
+          60.19791
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141916749825",
+        "currentSpeed": 6,
+        "typicalSpeed": 30,
+        "speedRatio": 0.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          24.91548,
+          60.16327
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756141936279553",
+        "currentSpeed": 0,
+        "typicalSpeed": 12,
+        "speedRatio": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.00753,
+          60.22812
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756210281054208",
+        "currentSpeed": 15,
+        "typicalSpeed": 67,
+        "speedRatio": 0.22388059701492538
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.00813,
+          60.22815
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756210281086976",
+        "currentSpeed": 15,
+        "typicalSpeed": 62,
+        "speedRatio": 0.24193548387096775
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.00738,
+          60.22812
+        ]
+      },
+      "properties": {
+        "segmentId": "1195756210281185281",
+        "currentSpeed": 15,
+        "typicalSpeed": 69,
+        "speedRatio": 0.21739130434782608
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.0908,
+          60.2103
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037616215982081",
+        "currentSpeed": 5,
+        "typicalSpeed": 31,
+        "speedRatio": 0.16129032258064516
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.09055,
+          60.21046
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037616298065921",
+        "currentSpeed": 3,
+        "typicalSpeed": 32,
+        "speedRatio": 0.09375
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.09087,
+          60.21025
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037616298098689",
+        "currentSpeed": 5,
+        "typicalSpeed": 27,
+        "speedRatio": 0.18518518518518517
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.08601,
+          60.21411
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037684876967936",
+        "currentSpeed": 8,
+        "typicalSpeed": 35,
+        "speedRatio": 0.22857142857142856
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.08598,
+          60.21416
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037684877000704",
+        "currentSpeed": 8,
+        "typicalSpeed": 37,
+        "speedRatio": 0.21621621621621623
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.08771,
+          60.21231
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037685230665729",
+        "currentSpeed": 3,
+        "typicalSpeed": 19,
+        "speedRatio": 0.15789473684210525
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.09007,
+          60.21077
+        ]
+      },
+      "properties": {
+        "segmentId": "1196037685311602689",
+        "currentSpeed": 3,
+        "typicalSpeed": 18,
+        "speedRatio": 0.16666666666666666
+      }
+    }
+  ]
+}

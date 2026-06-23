@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic metadata and external Leaflet CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFDS data products demonstrator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        /* General page layout */
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Top header bar with logo and title */
+        #header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+            flex-grow: 1;
+        }
+        #header .logos {
+            display: flex;
+            align-items: center;
+        }
+        #header .main-logo {
+            height: 30px;
+            margin-right: 20px;
+        }
+        #header .logos img {
+            height: 35px;
+            margin-left: 15px;
+        }
+
+        /* Map container filling the rest of the screen */
+        #map {
+            height: calc(100% - 60px);
+            width: 100%;
+            margin-top: 60px;
+        }
+
+        /* Map legend styling */
+        .legend {
+            background: white;
+            padding: 12px;
+            line-height: 1.6;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: #444;
+        }
+        .legend strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #000;
+        }
+        .legend i {
+            width: 16px;
+            height: 16px;
+            float: left;
+            margin-right: 10px;
+            opacity: 0.8;
+            border: 1px solid #ccc;
+        }
+        .legend hr {
+            margin: 10px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
+
+        /* Loading indicator shown before data arrives */
+        #loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1002;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        /* Project partner logos in the bottom left corner */
+        #footer-logos {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+        #footer-logos img {
+            height: 35px;
+            margin-right: 15px;
+        }
+        #footer-logos img:last-child {
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header with logos and title -->
+<div id="header">
+    <img src="TFDS.svg" alt="TFDS Logo" class="main-logo">
+    <h1>TFDS data products demonstrator</h1>
+    <div class="logos">
+        <img src="logo_hel.png" alt="City of Helsinki">
+        <img src="logo_fvh.png" alt="Forum Virium Helsinki">
+    </div>
+</div>
+
+<!-- Main UI elements: loading message and map container -->
+<div id="loader">Loading Map Data...</div>
+<div id="map"></div>
+
+<!-- Funding and project logos -->
+<div id="footer-logos">
+    <img src="co-fundedbytheEU.png" alt="Co-funded by the European Union">
+    <img src="edpsm.webp" alt="European data space for smart communities">
+</div>
+
+<!-- Leaflet JavaScript library -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    // Initialize the Leaflet map, centered on Helsinki
+    var map = L.map('map').setView([60.1699, 24.9384], 13); 
+    
+    // Create layer control to toggle between base maps and overlays
+    var layerControl = L.control.layers().addTo(map);
+    
+    // Define base layers from City of Helsinki GeoServer (WMS)
+    var HKI_basemap = L.tileLayer.wms("https://kartta.hel.fi/ws/geoserver/avoindata/wms?", {
+        layers: 'avoindata:Opaskartta_PKS_harmaa',
+        format: 'image/png',
+        transparent: false,
+        attribution: "<a href='https://kartta.hel.fi/avoindata'>Helsingin opaskartta &#169; Helsingin kaupunkiympäristön toimiala / Kaupunkimittauspalvelut</a>"
+    });
+
+    var HKI_photo = L.tileLayer.wms("https://kartta.hel.fi/ws/geoserver/avoindata/wms?", {
+        layers: 'avoindata:Ortoilmakuva',
+        format: 'image/png',
+        transparent: false,
+        attribution: "<a href='https://kartta.hel.fi/avoindata'>Helsingin ortoilmakuva &#169; Helsingin kaupunkiympäristön toimiala / Kaupunkimittauspalvelut</a>"
+    });
+
+    // Add base layers to the map and control
+    layerControl.addBaseLayer(HKI_basemap, "Background map");
+    layerControl.addBaseLayer(HKI_photo, "Aerial image");
+    HKI_basemap.addTo(map);
+
+    // Define data source URLs on Google Cloud Storage. 
+    // Timestamps are appended to bypass potential browser caching.
+    const datexUrl = 'https://storage.googleapis.com/tfds-public-output/datex2_output.json?t=' + new Date().getTime();
+    const segmentsUrl = 'https://storage.googleapis.com/tfds-public-output/filtered_segments.json?t=' + new Date().getTime();
+    const pointsUrl = 'https://storage.googleapis.com/tfds-public-output/traffic_disturbance_max_running_mean.json?t=' + new Date().getTime();
+
+    /**
+     * Common popup handler for GeoJSON features.
+     * Displays all properties found in the feature.
+     */
+    function onEachFeature(feature, layer) {
+        if (feature.properties) {
+            let popupContent = "";
+            for (let key in feature.properties) {
+                popupContent += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+            }
+            layer.bindPopup(popupContent);
+        }
+    }
+
+    /**
+     * Returns a color based on speedRatio for traffic segments.
+     * Currently returns a single shade for all slow segments.
+     */
+    function getColorForSpeedRatio(ratio) {
+        return '#e6550d'; // Orange
+    }
+
+    /**
+     * Color mapping for roadwork impact levels (highest_running_mean).
+     * Higher values indicate greater disturbance.
+     */
+    function getColorForRoadworks(val) {
+        return val > 0.4 ? '#49006a' : // Dark Purple
+               val > 0.2 ? '#ae017e' : // Magenta
+               val > 0.1 ? '#f768a1' : // Pink
+               val > 0.05? '#fbb4b9' : // Light Pink
+                           '#feebe2';   // Very Light Pink
+    }
+
+    /**
+     * Color mapping for DATEX II road status management.
+     */
+    function getStatusColor(status) {
+        switch (status) {
+            case 'open': return 'green';
+            case 'closed': return 'red';
+            case 'undetermined': return 'gray';
+            default: return 'blue';
+        }
+    }
+
+    /**
+     * Parses a GML-style space-separated coordinate list into 
+     * a Leaflet-compatible array of [lat, lng].
+     */
+    function parsePosList(posList) {
+        var coords = posList.trim().split(/\s+/);
+        var latLngs = [];
+        for (var i = 0; i < coords.length; i += 2) {
+            latLngs.push([parseFloat(coords[i]), parseFloat(coords[i+1])]);
+        }
+        return latLngs;
+    }
+
+    /**
+     * Formats DATEX II record data for display in map popups.
+     */
+    function createPopupContent(record, status = null) {
+        let content = `<strong>ID:</strong> ${record.id}<br>`;
+        if (record.roadworksType) content += `<strong>Type:</strong> ${record.roadworksType}<br>`;
+        if (status) content += `<strong>Status:</strong> ${status}<br>`;
+        
+        if (record.validity && record.validity.validityTimeSpecification && record.validity.validityTimeSpecification.startOfPeriod) {
+            let date = new Date(record.validity.validityTimeSpecification.startOfPeriod);
+            content += `<strong>Starts:</strong> ${date.toLocaleString()}<br>`;
+        }
+
+        if (record.generalPublicComment) {
+            let comments = record.generalPublicComment.map(c => c.comment).join(' ');
+            content += `<hr><em>${comments}</em>`;
+        }
+        return content;
+    }
+
+    // Initialize layer groups for different data types
+    const datexLayer = L.featureGroup().addTo(map);
+    const segmentsLayerGroup = L.featureGroup();
+    const pointsLayerGroup = L.featureGroup();
+
+    // Fetch and visualize all data sources concurrently
+    Promise.all([
+        fetch(datexUrl).then(res => res.json()),
+        fetch(segmentsUrl).then(res => res.json()),
+        fetch(pointsUrl).then(res => res.json())
+    ])
+    .then(([datexData, segmentsData, pointsData]) => {
+        // Hide the loading indicator once data is received
+        document.getElementById('loader').style.display = 'none';
+
+        // 1. Process DATEX II data
+        // DATEX II data can contain both work areas (polygons) and impacted segments (polylines)
+        if (datexData.situation) {
+            datexData.situation.forEach(sit => {
+                sit.situationRecord.forEach(record => {
+                    // Visualize Work Area (Polygon)
+                    if (record.groupOfLocations && record.groupOfLocations.gmlPolygon) {
+                        var polygonData = record.groupOfLocations.gmlPolygon.polygon;
+                        var posList = polygonData.exterior.linearRing.posList;
+                        var latLngs = parsePosList(posList);
+
+                        L.polygon(latLngs, {
+                            color: 'blue',
+                            fillColor: '#30f',
+                            fillOpacity: 0.2,
+                            weight: 2
+                        }).addTo(datexLayer)
+                        .bindPopup(createPopupContent(record));
+                    }
+
+                    // Visualize Impacted Road Segments (Lines)
+                    if (record.impact && record.impact.roadOrCarriagewayOrLaneManagements) {
+                        record.impact.roadOrCarriagewayOrLaneManagements.forEach(mgmt => {
+                            if (mgmt.location && mgmt.location.gmlLineString) {
+                                var posList = mgmt.location.gmlLineString.posList;
+                                var status = mgmt.roadOrCarriagewayOrLaneStatus;
+                                var latLngs = parsePosList(posList);
+
+                                var polyline = L.polyline(latLngs, {
+                                    color: getStatusColor(status),
+                                    weight: 5,
+                                    opacity: 0.8
+                                }).addTo(datexLayer);
+
+                                polyline.bindPopup(createPopupContent(record, status));
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        // 2. Process Slow moving segments (GeoJSON)
+        // These are visualized as circle markers on the segment centroids
+        L.geoJSON(segmentsData, {
+            pointToLayer: function (feature, latlng) {
+                const ratio = feature.properties.speedRatio || 0;
+                return L.circleMarker(latlng, {
+                    radius: 7,
+                    fillColor: getColorForSpeedRatio(ratio),
+                    color: "#000",
+                    weight: 0.5,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                });
+            },
+            onEachFeature: onEachFeature
+        }).addTo(segmentsLayerGroup);
+
+        // 3. Process Roadworks impact (GeoJSON)
+        // Visualized as circle markers where radius and color reflect the impact intensity
+        L.geoJSON(pointsData, {
+            pointToLayer: function (feature, latlng) {
+                const val = feature.properties.highest_running_mean || 0;
+                const dynamicRadius = 6 + (Math.min(val, 1) * 10);
+                
+                return L.circleMarker(latlng, {
+                    radius: dynamicRadius,
+                    fillColor: getColorForRoadworks(val),
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+            },
+            onEachFeature: onEachFeature
+        }).addTo(pointsLayerGroup);
+
+        // Add overlays to the layer control
+        layerControl.addOverlay(datexLayer, "DATEX II Data");
+        layerControl.addOverlay(segmentsLayerGroup, "Slow moving segments");
+        layerControl.addOverlay(pointsLayerGroup, "Roadworks");
+
+        // Automatically zoom the map to fit the primary DATEX II data bounds
+        if (datexLayer.getLayers().length > 0) {
+            map.fitBounds(datexLayer.getBounds());
+        } else {
+            // Fallback: zoom to fit any available data
+            const group = new L.featureGroup([datexLayer, segmentsLayerGroup, pointsLayerGroup]);
+            if (group.getLayers().length > 0) {
+                map.fitBounds(group.getBounds());
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error loading data:', error);
+        document.getElementById('loader').innerText = 'Error loading data. Check console for details.';
+    });
+
+    // Create and add a comprehensive map legend
+    var legend = L.control({position: 'bottomright'});
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'legend');
+        
+        // DATEX II Road Status section
+        div.innerHTML += '<strong>DATEX II Road Status</strong>';
+        var statuses = ['open', 'closed', 'undetermined'];
+        for (var i = 0; i < statuses.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getStatusColor(statuses[i]) + '"></i> ' +
+                statuses[i] + '<br>';
+        }
+        div.innerHTML += '<i style="background:blue; opacity:0.2; border: 1px solid blue;"></i> Work Area<br>';
+        
+        div.innerHTML += '<hr>';
+        
+        // Slow Moving Segments section
+        div.innerHTML += '<strong>Slow Moving Segments</strong>';
+        div.innerHTML += '<i style="background:#e6550d; border-radius: 50%;"></i> Speed significantly reduced<br>';
+
+        div.innerHTML += '<hr>';
+
+        // Roadworks impact section (pointsData)
+        div.innerHTML += '<strong>Roadwork impact on traffic flow</strong>';
+        var intensity = [0.5, 0.25, 0.15, 0.08, 0.02];
+        var intensityLabels = ['Very High', 'High', 'Medium', 'Low', 'Very Low'];
+        for (var i = 0; i < intensity.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getColorForRoadworks(intensity[i]) + '; border-radius: 50%;"></i> ' +
+                intensityLabels[i] + '<br>';
+        }
+
+        return div;
+    };
+    legend.addTo(map);
+
+</script>
+</body>
+</html>
