@@ -1,6 +1,6 @@
 # TFDS Source Code and Utilities
 
-This directory contains the primary software components, integration workflows, and helper utilities developed for the Traffic Flow Data Space (TFDS).
+This directory contains software components, integration workflows, and helper utilities developed for the Traffic Flow Data Space (TFDS).
 
 ## Components
 

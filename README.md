@@ -48,3 +48,24 @@ traffic_flow_data_space/
     *   **[src/tfds-application-integration/](src/tfds-application-integration)**: JSON exports for Google Application Integration orchestration workflows.
     *   **[src/tfds-viewer/](src/tfds-viewer)**: Interactive Leaflet map demonstrator visualizing generated data products.
     *   **[src/git-scripts/](src/git-scripts)**: Auxiliary scripts for managing code bases in local environments.
+
+## Additional Repositories
+
+These repositories are also part of the TFDS project:
+
+### Traffic Analysis & Dashboards (IDEA)
+
+*   **[IDEA-Helsinki](https://github.com/ForumViriumHelsinki/IDEA-Helsinki)**: A traffic validation system that analyzes the impact of traffic disturbances on road segments using real-time floating car data.
+*   **[TFDS_Dashboard](https://github.com/ForumViriumHelsinki/TFDS_Dashboard)**: A dashboard connected directly to InfluxDB for time-series data storage, analysis, and real-time visualization of floating car data.
+    *   *Key Features*: Real-time visualization, Sentry error tracking, automated CI/CD via GitHub Actions, and container deployment via ArgoCD.
+
+### SIMPL-Open Data Space Components
+
+These repositories contain deployment configurations, manifests, and Helm charts customized for TFDS agents and infrastructure, optimized for both scalable multi-node cloud environments and single-node local Kubernetes (k3s) environments:
+
+*   **[TFDS_SIMPL-open_common_components](https://github.com/ForumViriumHelsinki/TFDS_SIMPL-open_common_components)**: Configurations and deployment manifests for SIMPL-Open Common Components.
+*   **[TFDS_SIMPL-open_governance_authority](https://github.com/ForumViriumHelsinki/TFDS_SIMPL-open_governance_authority)**: Configurations and deployment manifests for the SIMPL-Open Governance Authority agent.
+*   **[TFDS_SIMPL-open_data_consumer](https://github.com/ForumViriumHelsinki/TFDS_SIMPL-open_data_consumer)**: Configurations and deployment manifests for the SIMPL-Open Data Consumer agent.
+*   **[TFDS_SIMPL-open_data_provider](https://github.com/ForumViriumHelsinki/TFDS_SIMPL-open_data_provider)**: Configurations and deployment manifests for the SIMPL-Open Data Provider agent.
+*   **[TFDS-SIMPL-open-helm-charts](https://github.com/ForumViriumHelsinki/TFDS-SIMPL-open-helm-charts)**: Helm charts for Level 3 microservices and shared infrastructure used by TFDS agents, flattened to support a highly visible GitOps deployment model.
+*   **[TFDS-SIMPL-open-applications](https://github.com/ForumViriumHelsinki/TFDS-SIMPL-open-applications)**: Monorepo hosting customized application source codes and critical hotfixes optimized for TFDS agent deployments.
