@@ -8,18 +8,30 @@ This repository showcases the architectural designs, data production scripts, in
 
 ## Repository Structure
 
-```mermaid
-graph TD
-    Root[Repository Root] --> Doc[doc/]
-    Root --> Src[src/]
-    
-    Doc --> DocK3s[SIMPL-k3s/]
-    Doc --> DocSchematics[schematics/]
-    
-    Src --> SrcGit[git-scripts/]
-    Src --> SrcAppInt[tfds-application-integration/]
-    Src --> SrcViewer[tfds-viewer/]
-    Src --> SrcProducers[Producers]
+```
+traffic_flow_data_space/
+├── doc/                                    # Architecture design and infrastructure deployment docs
+│   ├── SIMPL-k3s/                          # Guides for setting up single-node and multi-node k3s clusters
+│   │   ├── k3s_setup_single_node.md
+│   │   ├── k3s_setup_multi_node.md
+│   │   └── README.md
+│   └── schematics/                         # MermaidJS logical architecture diagrams
+│       ├── IDEA/                           # IDEA data space diagrams
+│       ├── SIMPL-data_space_architecture/  # Onboarding, authorization, catalog publication, and discovery processes
+│       └── README.md
+├── src/                                    # Source code, utility tools, data producers, and integration flows
+│   ├── git-scripts/                        # Helper scripts for repository cloning and updating
+│   │   ├── git_puller.sh
+│   │   ├── simpl_cloner.sh
+│   │   └── README.md
+│   ├── tfds-application-integration/       # JSON exports for Google Application Integration workflows
+│   ├── tfds-dailyflow-producer/            # Google Apps Script evaluating flow impact levels
+│   ├── tfds-datex2-producer/               # Google Apps Script converting traffic disturbances into Datex II format
+│   ├── tfds-speedwarning-producer/         # Google Apps Script identifying traffic congestion warnings
+│   ├── tfds-viewer/                        # Leaflet map demonstrator visualizing generated data products
+│   └── README.md
+├── LICENSE
+└── README.md                               # This file
 ```
 
 ---
@@ -30,7 +42,9 @@ graph TD
     *   **[doc/schematics/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/doc/schematics)**: MermaidJS logical architecture diagrams outlining participant onboarding, authentication, publishing, querying, and data transaction processes. Read the [Schematics README](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/doc/schematics/README.md).
     *   **[doc/SIMPL-k3s/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/doc/SIMPL-k3s)**: Guides for setting up single-node and multi-node k3s clusters for deploying SIMPL nodes. Read the [K3s Setup README](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/doc/SIMPL-k3s/README.md).
 *   **[src/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src)**: Source code, utility tools, data producers, and integration flows. Read the [Source README](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/README.md).
-    *   **Producers**: Google Apps Scripts processing real-time speed warnings, Datex II transformations, and daily flow calculations.
+    *   **[src/tfds-speedwarning-producer/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/tfds-speedwarning-producer)**: Google Apps Script checking InfluxDB for real-time and typical speed ratios to publish traffic congestion midpoints as GeoJSON to GCS.
+    *   **[src/tfds-datex2-producer/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/tfds-datex2-producer)**: Google Apps Script mapping disturbance GCS data and active segment closures into Datex II formatted `SituationPublication` JSON documents.
+    *   **[src/tfds-dailyflow-producer/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/tfds-dailyflow-producer)**: Google Apps Script correlating active GCS disturbances with InfluxDB flow data (`running_mean`) over 24 hours to output GeoJSON points.
     *   **[src/tfds-application-integration/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/tfds-application-integration)**: JSON exports for Google Application Integration orchestration workflows.
     *   **[src/tfds-viewer/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/tfds-viewer)**: Interactive Leaflet map demonstrator visualizing generated data products.
     *   **[src/git-scripts/](file:///Users/tatu.erkinjuntti/Development/Repositories/SIMPL-DEV/TFDS-SIMPL/TFDS-SIMPL-OPEN_DEVELOPMENT/traffic_flow_data_space/src/git-scripts)**: Auxiliary scripts for managing code bases in local environments.
