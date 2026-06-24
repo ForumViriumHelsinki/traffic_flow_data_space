@@ -15,6 +15,12 @@ traffic_flow_data_space/
 │   │   ├── k3s_setup_single_node.md
 │   │   ├── k3s_setup_multi_node.md
 │   │   └── README.md
+│   ├── simpl-eval-cloud/                   # Cloud (GKE) counterpart: managed-K8s SIMPL-Open deployment docs
+│   │   ├── overview/                       # What SIMPL-Open is + deployment timeline
+│   │   ├── architecture/                   # GCP architecture, endpoints, portability audit, D2 diagrams
+│   │   ├── upstream/                        # Upstream feedback and deployment retrospective
+│   │   ├── sbom/                            # Chart/image/source inventory + coupling audit
+│   │   └── README.md
 │   ├── schematics/                         # MermaidJS logical architecture diagrams
 │   │   ├── IDEA/                           # IDEA data space diagrams
 │   │   ├── SIMPL-data_space_architecture/  # Onboarding, authorization, catalog publication, and discovery processes
@@ -42,6 +48,7 @@ traffic_flow_data_space/
 *   **[doc/](doc)**: Documentation regarding architecture design and infrastructure deployment.
     *   **[doc/schematics/](doc/schematics)**: MermaidJS logical architecture diagrams outlining participant onboarding, authentication, publishing, querying, and data transaction processes. Read the [Schematics README](doc/schematics/README.md).
     *   **[doc/SIMPL-k3s/](doc/SIMPL-k3s)**: Guides for setting up single-node and multi-node k3s clusters for deploying SIMPL nodes. Read the [K3s Setup README](doc/SIMPL-k3s/README.md).
+    *   **[doc/simpl-eval-cloud/](doc/simpl-eval-cloud)**: The cloud (GKE) counterpart to the k3s guide — a managed-Kubernetes SIMPL-Open deployment on Google Cloud, with GCP architecture, portability audit, SBOM, upstream feedback, and a deployment retrospective. Read the [SIMPL-eval Cloud README](doc/simpl-eval-cloud/README.md).
 *   **[src/](src)**: Source code, utility tools, data producers, and integration flows. Read the [Source README](src/README.md).
     *   **[src/tfds-speedwarning-producer/](src/tfds-speedwarning-producer)**: Google Apps Script checking InfluxDB for real-time and typical speed ratios to publish traffic congestion midpoints as GeoJSON to Google Cloud Storage (GCS).
     *   **[src/tfds-datex2-producer/](src/tfds-datex2-producer)**: Google Apps Script mapping disturbance GCS data and active segment closures into Datex II formatted `SituationPublication` JSON documents.

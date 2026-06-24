@@ -1,0 +1,155 @@
+# SIMPL-Open GCP Architecture — gke-simpl-eval and its GCP surroundings
+# Source of truth: the deployment's internal Terraform module (main.tf, cloudsql.tf, kms.tf, fleet.tf)
+# Companion: dependency-graph.d2 (chart/secret topology inside the cluster)
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 1
+    pad: 30
+  }
+}
+
+direction: right
+
+classes: {
+  fvh-internal: {
+    style: {
+      fill: "#e3f2fd"
+      stroke: "#1565c0"
+      font-color: "#1565c0"
+      border-radius: 8
+    }
+  }
+  simpl-deployed: {
+    style: {
+      fill: "#fff8e1"
+      stroke: "#f57f17"
+      font-color: "#f57f17"
+      border-radius: 8
+    }
+  }
+  gcp-service: {
+    style: {
+      fill: "#e8f5e9"
+      stroke: "#2e7d32"
+      font-color: "#2e7d32"
+      border-radius: 8
+    }
+  }
+  external: {
+    style: {
+      fill: "#f3e5f5"
+      stroke: "#6a1b9a"
+      font-color: "#6a1b9a"
+      border-radius: 8
+    }
+  }
+}
+
+internet: Internet {
+  class: external
+  shape: cloud
+}
+
+gcp: "GCP project <gcp-project-id>" {
+  fleet-cluster: "<fleet-cluster> (fleet)" {
+    argocd: "ArgoCD\n<fleet-argocd-host>" {
+      class: fvh-internal
+    }
+  }
+
+  simpl-cluster: "gke-simpl-eval (GKE Standard, regional europe-north1)" {
+    style.stroke-width: 2
+
+    nodes: "node pool: 2x e2-standard-4 (autoscale 1-3)" {
+      class: fvh-internal
+      style.stroke-dash: 2
+    }
+
+    platform-ns: "platform namespaces" {
+      nginx: "ingress-nginx" {
+        class: fvh-internal
+      }
+      cert-manager: "cert-manager\n(letsencrypt-prod)" {
+        class: fvh-internal
+      }
+      eso: "external-secrets" {
+        class: fvh-internal
+      }
+      extdns: "external-dns" {
+        class: fvh-internal
+      }
+    }
+
+    common-ns: "simpl-eval-common" {
+      openbao: "OpenBao" {
+        class: simpl-deployed
+      }
+      kafka: "Kafka\n(Confluent operator)" {
+        class: simpl-deployed
+      }
+      support: "notification, ICM,\nmailpit, pgAdmin,\nRedpanda console" {
+        class: simpl-deployed
+      }
+      bridge: "bridge-secrets +\ncloudsql-proxy (FVH)" {
+        class: fvh-internal
+      }
+    }
+
+    governance-ns: "simpl-eval-governance" {
+      keycloak: "Keycloak" {
+        class: simpl-deployed
+      }
+      ejbca: "EJBCA (PKI)" {
+        class: simpl-deployed
+      }
+      services: "governance services\n(IAA, gateways,\nonboarding, frontend...)" {
+        class: simpl-deployed
+      }
+    }
+  }
+
+  shared: "Shared GCP services" {
+    dns: "Cloud DNS\ntfds.io public zone" {
+      class: gcp-service
+    }
+    sql: "Cloud SQL PostgreSQL\ndb-custom-1-3840, ZONAL\nprivate IP only" {
+      class: gcp-service
+    }
+    gsm: "Secret Manager\n(infra secrets)" {
+      class: gcp-service
+    }
+    kms: "Cloud KMS\n<openbao-keyring> keyring" {
+      class: gcp-service
+    }
+    gcs: "GCS bucket\n(FUSE RWX volumes)" {
+      class: gcp-service
+    }
+    nat: "Cloud NAT" {
+      class: gcp-service
+    }
+  }
+}
+
+# Management path
+gcp.fleet-cluster.argocd -> gcp.simpl-cluster: "Connect Gateway\n(GKE Hub membership,\nWorkload Identity)" {
+  style.stroke-width: 2
+}
+
+# Public traffic path
+internet -> gcp.simpl-cluster.platform-ns.nginx: "tcp/80,443\nsimpl-eval-ingress-ip\n(EXTERNAL static IP)"
+gcp.simpl-cluster.platform-ns.extdns -> gcp.shared.dns: "publishes per-host\nA records"
+
+# Data paths
+gcp.simpl-cluster.common-ns.bridge -> gcp.shared.sql: "VPC peering\n(service networking)"
+gcp.simpl-cluster.common-ns.openbao -> gcp.shared.kms: "auto-unseal\n(Workload Identity)"
+gcp.simpl-cluster.platform-ns.eso -> gcp.shared.gsm: "syncs ExternalSecrets"
+gcp.simpl-cluster -> gcp.shared.gcs: "GCS FUSE CSI\n(Workload Identity)"
+gcp.simpl-cluster -> gcp.shared.nat: "outbound traffic"
+
+# In-cluster relations (coarse; full topology in dependency-graph.d2)
+gcp.simpl-cluster.governance-ns.services -> gcp.simpl-cluster.common-ns.openbao: "vault-secrets-webhook\ninjection"
+gcp.simpl-cluster.governance-ns.services -> gcp.simpl-cluster.common-ns.kafka
+gcp.simpl-cluster.governance-ns.services -> gcp.simpl-cluster.governance-ns.keycloak
+gcp.simpl-cluster.governance-ns.services -> gcp.simpl-cluster.governance-ns.ejbca: "mTLS PKI"
