@@ -1,0 +1,759 @@
+# SIMPL-Open Image Inventory (Forum Virium Helsinki, simpl-eval ApplicationSet)
+# Refresh: 2026-05-26 — chart pins updated to v3.1.0 candidate state per the adopted bypass-the-umbrella strategy (Option 1).
+# Companion to charts.yaml; image tags track the authority-iaa component pins
+# documented there.
+#
+# STALE — the per-component `used_by_chart` / `targetRevision` annotations below
+# still carry the 2026-05-26 *candidate* numbers (authority-iaa v1.2.17 set, plus
+# an authentication-provider 2.12.4 candidate that was never realized — it stayed
+# on the 2.8.1 fork). As of 2026-06-15 the live IAA set is authority-iaa v1.2.23
+# (tier1-gateway 2.12.6, sap 2.12.4, tier2-gateway 2.11.4, identity-provider
+# 2.11.4, tier2-proxy 1.5.5; users-roles 2.12.9 / onboarding 2.12.8). The single
+# source of truth for live chart/image versions is **charts.yaml** (refreshed to
+# v1.2.23) and the internal live-version snapshot; prefer those over the
+# numbers below until this inventory is reconciled in full.
+# Tags still placeholder (`<chart-pinned>`) for
+# SIMPL service images — verifying tags requires a chart render with network
+# egress to code.europa.eu (see the `caveat:` in summary at bottom).
+#
+# Method
+# ------
+# This file is the output of an image-inventory pass over the 28 ArgoCD
+# Applications under `argocd/applicationsets/simpl-eval/apps/*.yaml`.
+#
+# The originally requested method was: pull each chart, render with the CMP
+# placeholder substitution (containers/argocd-cmp), and grep `image:` from
+# the rendered output. The execution sandbox for this run blocked invocation
+# of `helm` and outbound chart pulls (network egress / `code.europa.eu`
+# auth), so all SIMPL-* charts (those whose repoURL is on code.europa.eu)
+# could not be rendered. Their image entries below are therefore INFERRED
+# from:
+#   1. Explicit `image:` overrides set in our `valuesObject` blocks
+#      (high confidence — these run as-written).
+#   2. Documented chart defaults for well-known third-party charts on
+#      public chart hubs (Bitnami, Codecentric, Confluent, Keyfactor,
+#      Bank-Vaults, Redpanda, Runix, Mailpit/Jouve, OpenBao, ingress-nginx).
+#   3. SIMPL-Open project convention: charts published on
+#      code.europa.eu/simpl/* pull their runtime images from the matching
+#      registry.code.europa.eu/simpl/* OCI registry. The exact image:tag
+#      pairs for each SIMPL service depend on the chart's bundled values
+#      and have NOT been verified by template render — see the
+#      `render_failures:` block at the bottom.
+#
+# Each entry's `confidence:` field flags how the ref was determined.
+# Charts whose images we could not enumerate at all (only the Helm chart
+# coordinates are known) are listed in `render_failures:`.
+#
+# Self-check
+# ----------
+# - All 27 distinct apps (28 files; cloudsql-proxy appears twice for two
+#   namespaces) attempted via static analysis.
+# - Image list is deduped by ref (image:tag).
+# - `leaking_monitoring_images:`, `leaking_crossplane_images:`,
+#   `ec_specific_registries:`, and `render_failures:` blocks present.
+
+images:
+  # ============================================================
+  # Explicit image overrides set in our valuesObject (high confidence)
+  # ============================================================
+  - ref: quay.io/keycloak/keycloak:25.0.6
+    used_by_chart: keycloakx (codecentric/helm-charts 7.1.8)
+    k8s_kinds: [StatefulSet]
+    registry: quay.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: explicit_override
+    notes: |
+      Set explicitly in apps/keycloak.yaml valuesObject.image to replace
+      Bitnami's pay-walled / corrupted Keycloak image. quay.io is public
+      and unauthenticated — no portability concern.
+
+      v3.1.0 SPECIAL CASE: The upstream v3.1.0 / authority-iaa v1.2.17
+      umbrella switches the Keycloak chart back to `bitnami/keycloak 25.2.0`
+      (image `docker.io/bitnami/keycloak:25.2.0` or the pay-walled
+      `bitnamilegacy/keycloak:25.2.0`). FVH OVERRIDES this back to
+      `codecentric/keycloakx 7.1.8` with this explicit
+      `quay.io/keycloak/keycloak:25.0.6` image per the adopted bypass-the-umbrella strategy (Option 1)
+      and the project's dependency-management policy (avoid Bitnami).
+      See charts.yaml `keycloakx` entry for the full ref chain.
+
+  - ref: registry.k8s.io/kubectl:v1.31.4
+    used_by_chart: redis (bitnami/redis 19.6.0)
+    k8s_kinds: [Job]
+    registry: registry.k8s.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: explicit_override
+    notes: |
+      Set in apps/redis.yaml valuesObject.kubectl.image to override
+      bitnami/kubectl (which lives on the legacy/pay-walled Bitnami
+      registry). registry.k8s.io is public.
+
+  - ref: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.16.0
+    used_by_chart: helm/cloudsql-proxy (local FVH chart, also used as
+      cloudsql-proxy-governance)
+    k8s_kinds: [Deployment]
+    registry: gcr.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: explicit_override
+    notes: |
+      Default in helm/cloudsql-proxy/values.yaml. GCP-specific image
+      (Cloud SQL Auth Proxy) — only relevant when targeting GCP Cloud
+      SQL. For non-GCP portability this Application would be replaced by
+      an in-cluster Postgres or another managed Postgres bridge.
+
+  # ============================================================
+  # Bitnami charts — well-known defaults (medium-high confidence)
+  # ============================================================
+  - ref: docker.io/bitnami/redis:7.4.x
+    used_by_chart: redis (bitnami/redis 19.6.0)
+    k8s_kinds: [StatefulSet]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: |
+      Bitnami images on Docker Hub have moved to the `bitnamilegacy/`
+      namespace and the maintained `bitnamicharts/` registry is now
+      pay-walled. See the project's dependency-management policy: redis is currently tolerated but should be migrated
+      to a non-Bitnami chart when a clean alternative emerges.
+    confidence: chart_default_inferred
+    notes: |
+      Image tag is `image.tag` from chart values, default is the
+      Bitnami-bundled major. Verify the actual tag with a chart render
+      once the sandbox permits it.
+
+  # ============================================================
+  # Codecentric Keycloak chart bundled extras
+  # ============================================================
+  # The keycloakx chart 7.1.8 bundles dbchecker and a few init helpers.
+  # These run as init containers if dbchecker.enabled: true (which we
+  # set) and pull a small Postgres-client image. Exact ref TBD on
+  # render. Listed in render_failures.
+
+  # ============================================================
+  # Confluent for Kubernetes Operator (chart 0.1351.24)
+  # ============================================================
+  - ref: docker.io/confluentinc/confluent-operator:0.1351.24
+    used_by_chart: confluent-for-kubernetes (packages.confluent.io 0.1351.24)
+    k8s_kinds: [Deployment]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: |
+      Confluent chart depends on Confluent Platform images
+      (cp-server, cp-schema-registry, cp-kafka-connect, etc.) which
+      are all under docker.io/confluentinc/*. They are publicly
+      pullable but Confluent's licensing restricts production use to
+      paid customers; the Community license covers Kafka itself.
+    confidence: chart_default_inferred
+
+  # ============================================================
+  # SIMPL Kafka chart (code.europa.eu project 976, chart "kafka" 1.2.0)
+  # ============================================================
+  # The SIMPL-published "kafka" chart wraps Confluent CRs. It does not
+  # define its own kafka container image — it relies on the Confluent
+  # operator to render the underlying StatefulSet. Operator-rendered
+  # images come from docker.io/confluentinc/* with versions chosen by
+  # the operator chart, not by this chart.
+
+  # ============================================================
+  # OpenBao (openbao/openbao-helm 0.19.1)
+  # ============================================================
+  - ref: docker.io/openbao/openbao:2.x
+    used_by_chart: openbao (openbao/openbao-helm 0.19.1)
+    k8s_kinds: [StatefulSet]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+    notes: |
+      OpenBao is the OSS HashiCorp Vault fork. Public, unauthenticated.
+      Tag depends on chart 0.19.1's appVersion — verify on render.
+
+  # ============================================================
+  # Bank-Vaults vault-secrets-webhook (1.22.1, OCI chart on GHCR)
+  # ============================================================
+  - ref: ghcr.io/bank-vaults/vault-secrets-webhook:1.22.x
+    used_by_chart: vault-secrets-webhook (ghcr.io/bank-vaults/helm-charts 1.22.1)
+    k8s_kinds: [Deployment, MutatingWebhookConfiguration]
+    registry: ghcr.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+    notes: |
+      Public GHCR image, no auth required.
+
+  # ============================================================
+  # EJBCA Community (Keyfactor)
+  # ============================================================
+  - ref: docker.io/keyfactor/ejbca-ce:8.x
+    used_by_chart: ejbca-community-helm (keyfactor.github.io 1.0.7)
+    k8s_kinds: [Deployment]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+
+  # ============================================================
+  # Mailpit (Jouve chart 0.23.1)
+  # ============================================================
+  - ref: docker.io/axllent/mailpit:1.x
+    used_by_chart: mailpit (jouve.github.io/charts 0.23.1)
+    k8s_kinds: [Deployment]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+
+  # ============================================================
+  # Redpanda Console (3.2.0)
+  # ============================================================
+  - ref: docker.io/redpandadata/console:v3.x
+    used_by_chart: console (charts.redpanda.com 3.2.0)
+    k8s_kinds: [Deployment]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+
+  # ============================================================
+  # pgAdmin4 (Runix chart 1.50.0)
+  # ============================================================
+  - ref: docker.io/dpage/pgadmin4:8.x
+    used_by_chart: pgadmin4 (helm.runix.net 1.50.0)
+    k8s_kinds: [Deployment]
+    registry: docker.io
+    needs_pull_secret: false
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: false
+    portability_concern: ""
+    confidence: chart_default_inferred
+
+  # ============================================================
+  # SIMPL-Open agent images (EC-specific registry — INFERRED)
+  # ============================================================
+  # Convention: every chart published as
+  #   https://code.europa.eu/api/v4/projects/<NNN>/packages/helm/stable
+  # bundles container images on
+  #   registry.code.europa.eu/simpl/simpl-open/<service>/...
+  # The exact :tag is set by the chart's values.image.tag — typically
+  # equal to the chart's appVersion. We cannot read those without a
+  # successful chart render. Each SIMPL service below is listed as a
+  # placeholder ref; treat the image refs as "chart-pinned, registry
+  # known, tag unknown".
+  #
+  # All SIMPL service images:
+  #   - Live on registry.code.europa.eu (PRIVATE, requires auth)
+  #   - Need an imagePullSecret. Upstream charts often hardcode the
+  #     name `gitlab-secret` or `regcred` — if so, FVH must mirror
+  #     that secret or pre-create it.
+  #   - Block portability to non-EC infra unless mirrored to GHCR.
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../adapter:<chart-pinned>
+    used_by_chart: poc-charts (project 759, 1.0.14) — adapter
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: |
+      EC-private registry. Mirror to ghcr.io/forumviriumhelsinki/simpl/*
+      to deploy outside FVH's authenticated environment.
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../authentication-provider:<chart-pinned>
+    used_by_chart: authentication-provider (project 939, 2.12.4)  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment, Job]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+    notes: |
+      Chart also generates a `create-secret` Job (apps/authentication-provider.yaml
+      ignoreDifferences confirms this). The Job image is typically the
+      same authentication-provider image running a setup command.
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../identity-provider:<chart-pinned>
+    used_by_chart: identity-provider (project 913, 2.11.3)  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../onboarding:<chart-pinned>
+    used_by_chart: onboarding (project 770, 2.12.7)  # v3.1.0 candidate (bumped from 2.8.1)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../security-attributes-provider:<chart-pinned>
+    used_by_chart: security-attributes-provider (project 861, 2.12.3) — sap  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../users-roles:<chart-pinned>
+    used_by_chart: users-roles (project 771, 2.12.6)  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../tier1-gateway:<chart-pinned>
+    used_by_chart: tier1-gateway (project 772, 2.12.4)  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../tier2-gateway:<chart-pinned>
+    used_by_chart: tier2-gateway (project 860, 2.11.3)  # v3.1.0 candidate (bumped from 2.8.0)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../tier2-proxy:<chart-pinned>
+    used_by_chart: tier2-proxy (project 1112, 1.5.4)  # v3.1.0 candidate (bumped from 1.2.1)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../simpl-fe:<chart-pinned>
+    used_by_chart: simpl-fe (project 769, 2.7.1) — frontend
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../fc-service:<chart-pinned>
+    used_by_chart: fc-service (project 820, 1.0.12) — xsfc-catalogue
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../infrastructure-consumption-monitoring-service:<chart-pinned>
+    used_by_chart: infrastructure-consumption-monitoring-service (project 1240, 2.3.1)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+    notes: |
+      Despite the name "consumption-monitoring", this is a SIMPL business
+      service for tracking IDS data-space resource consumption — not a
+      Prometheus/Grafana stack. Not flagged as is_monitoring.
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../simpl-notification-service:<chart-pinned>
+    used_by_chart: simpl-notification-service (project 1002, 2.1.1)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../simpl-schema-manager:<chart-pinned>
+    used_by_chart: simpl-schema-manager-charts (project 1124, 0.0.13)
+    k8s_kinds: [Deployment]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: "EC-private registry; mirror required."
+    confidence: registry_inferred_tag_unknown
+
+  - ref: registry.code.europa.eu/simpl/simpl-open/.../openbao-config:<chart-pinned>
+    used_by_chart: openbao-config (project 1258, 1.2.3)
+    k8s_kinds: [Job]
+    registry: registry.code.europa.eu
+    needs_pull_secret: true
+    is_monitoring: false
+    is_crossplane: false
+    is_ec_specific: true
+    portability_concern: |
+      Job-only image — runs once at deploy time to seed OpenBao policies
+      and roles. Mirroring to GHCR is straightforward (small image).
+    confidence: registry_inferred_tag_unknown
+
+leaking_monitoring_images:
+  # Empty in current configuration.
+  #
+  # Our common-components-local.yaml sets `monitoring.enabled: false`,
+  # and the SIMPL umbrella honors that flag — none of the per-app
+  # apps/*.yaml manifests include a Prometheus/Grafana/blackbox-exporter
+  # image. The simpl-monitoring chart is NOT in the simpl-eval
+  # ApplicationSet at all.
+  #
+  # Caveat: this conclusion is based on the values overrides we ship,
+  # not a confirmed render. A chart that ignores the global
+  # `monitoring.enabled` flag would leak — verify on render.
+  []
+
+leaking_crossplane_images:
+  # Empty.
+  # No Crossplane provider images are referenced from any of the 28
+  # apps. SIMPL-Open does not bundle Crossplane in the common_components
+  # or governance-authority umbrellas as of v2.4.x.
+  []
+
+ec_specific_registries:
+  - registry: registry.code.europa.eu
+    requires_auth: true
+    used_by_apps:
+      - adapter
+      - authentication-provider
+      - identity-provider
+      - onboarding
+      - sap (security-attributes-provider)
+      - users-roles
+      - tier1-gateway
+      - tier2-gateway
+      - tier2-proxy
+      - frontend (simpl-fe)
+      - xsfc-catalogue (fc-service)
+      - icm (infrastructure-consumption-monitoring-service)
+      - notification (simpl-notification-service)
+      - schema-manager
+      - openbao-config
+    portability_blocker: |
+      All SIMPL business services. To deploy SIMPL outside an
+      EC-authenticated environment, mirror these images to
+      ghcr.io/forumviriumhelsinki/simpl/* and override
+      `image.repository` (or equivalent values key) on each chart.
+    chart_repo_also_ec_specific: |
+      Every "code.europa.eu/api/v4/projects/<NNN>/packages/helm/stable"
+      Helm repoURL is on the same EC infrastructure. The Helm chart
+      pulls themselves work without auth (the GitLab packages API allows
+      anonymous reads), but the images they reference do not.
+
+  - registry: code.europa.eu (Helm chart hosting only, anonymous-readable)
+    requires_auth: false
+    used_by_apps: "all charts whose repoURL begins with code.europa.eu/api/v4/..."
+    portability_blocker: |
+      Not strictly a blocker — the GitLab packages API serves charts
+      anonymously — but creates a coupling: if EC pulls a chart version
+      or rotates the URL, our deploys break. Mitigation: mirror chart
+      tarballs to GHCR's OCI registry alongside the images.
+
+pull_secrets_referenced:
+  # Pull-secret names that SIMPL charts may hardcode in pod specs.
+  # These need to be created in each target namespace OR injected by
+  # Kyverno (FVH already runs `add-ghcr-namespace-label` Kyverno policy
+  # to inject `ghcr-login-secret` — needs an EC-equivalent for SIMPL
+  # private images).
+  - name: regcred
+    likely_namespaces: [simpl-eval-common, simpl-eval-governance]
+    confidence: convention
+  - name: gitlab-secret
+    likely_namespaces: [simpl-eval-common, simpl-eval-governance]
+    confidence: convention
+  - name: ghcr-login-secret
+    likely_namespaces: [argocd, simpl-eval-common, simpl-eval-governance]
+    confidence: confirmed
+    notes: |
+      FVH ClusterExternalSecret — provisioned automatically into
+      namespaces labeled `ghcr.forumvirium.fi/pull=enabled`. Used for
+      pulling our containers-argocd-cmp sidecar.
+
+render_failures:
+  # Charts the script attempted but could not render due to sandbox.
+  # All entries here have known coordinates (chart + repoURL +
+  # targetRevision) and known purpose; only the exact image:tag pairs
+  # could not be enumerated.
+  - app: adapter
+    chart: poc-charts
+    repoURL: https://code.europa.eu/api/v4/projects/759/packages/helm/stable
+    targetRevision: 1.0.14
+    error: |
+      Sandbox blocks `helm pull` and outbound network. Image tag is
+      pinned by the chart's bundled values.image.tag.
+  - app: authentication-provider
+    chart: authentication-provider
+    repoURL: https://code.europa.eu/api/v4/projects/939/packages/helm/stable
+    targetRevision: 2.12.4  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as above
+  - app: ejbca
+    chart: ejbca-community-helm
+    repoURL: https://keyfactor.github.io/ejbca-community-helm
+    targetRevision: 1.0.7
+    error: |
+      Public chart — would render successfully outside sandbox. Default
+      image is keyfactor/ejbca-ce, tag = chart appVersion.
+  - app: frontend
+    chart: simpl-fe
+    repoURL: https://code.europa.eu/api/v4/projects/769/packages/helm/stable
+    targetRevision: 2.7.1
+    error: same as adapter
+  - app: icm
+    chart: infrastructure-consumption-monitoring-service
+    repoURL: https://code.europa.eu/api/v4/projects/1240/packages/helm/stable
+    targetRevision: 2.3.1
+    error: same as adapter
+  - app: identity-provider
+    chart: identity-provider
+    repoURL: https://code.europa.eu/api/v4/projects/913/packages/helm/stable
+    targetRevision: 2.11.3  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as adapter
+  - app: kafka
+    chart: kafka
+    repoURL: https://code.europa.eu/api/v4/projects/976/packages/helm/stable
+    targetRevision: 1.2.0
+    error: same as adapter
+  - app: keycloak
+    chart: keycloakx
+    repoURL: https://codecentric.github.io/helm-charts
+    targetRevision: 7.1.8
+    error: |
+      Public chart. Image override is explicit in valuesObject
+      (quay.io/keycloak/keycloak:25.0.6). dbchecker init-container
+      image not enumerated — tag is bundled in chart 7.1.8.
+
+      v3.1.0 SPECIAL CASE: upstream v3.1.0 / authority-iaa v1.2.17
+      switches Keycloak back to `bitnami/keycloak 25.2.0`. FVH continues
+      to override to codecentric/keycloakx 7.1.8 per the adopted bypass-the-umbrella strategy (Option 1)
+      and the project's dependency-management policy (avoid Bitnami).
+  - app: notification
+    chart: simpl-notification-service
+    repoURL: https://code.europa.eu/api/v4/projects/1002/packages/helm/stable
+    targetRevision: 2.1.1
+    error: same as adapter
+  - app: onboarding
+    chart: onboarding
+    repoURL: https://code.europa.eu/api/v4/projects/770/packages/helm/stable
+    targetRevision: 2.12.7  # v3.1.0 candidate (bumped from 2.8.1)
+    error: same as adapter
+  - app: openbao-config
+    chart: openbao-config
+    repoURL: https://code.europa.eu/api/v4/projects/1258/packages/helm/stable
+    targetRevision: 1.2.3
+    error: same as adapter
+  - app: sap
+    chart: security-attributes-provider
+    repoURL: https://code.europa.eu/api/v4/projects/861/packages/helm/stable
+    targetRevision: 2.12.3  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as adapter
+  - app: schema-manager
+    chart: simpl-schema-manager-charts
+    repoURL: https://code.europa.eu/api/v4/projects/1124/packages/helm/stable
+    targetRevision: 0.0.13
+    error: same as adapter
+  - app: tier1-gateway
+    chart: tier1-gateway
+    repoURL: https://code.europa.eu/api/v4/projects/772/packages/helm/stable
+    targetRevision: 2.12.4  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as adapter
+  - app: tier2-gateway
+    chart: tier2-gateway
+    repoURL: https://code.europa.eu/api/v4/projects/860/packages/helm/stable
+    targetRevision: 2.11.3  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as adapter
+  - app: tier2-proxy
+    chart: tier2-proxy
+    repoURL: https://code.europa.eu/api/v4/projects/1112/packages/helm/stable
+    targetRevision: 1.5.4  # v3.1.0 candidate (bumped from 1.2.1)
+    error: same as adapter
+  - app: users-roles
+    chart: users-roles
+    repoURL: https://code.europa.eu/api/v4/projects/771/packages/helm/stable
+    targetRevision: 2.12.6  # v3.1.0 candidate (bumped from 2.8.0)
+    error: same as adapter
+  - app: xsfc-catalogue
+    chart: fc-service
+    repoURL: https://code.europa.eu/api/v4/projects/820/packages/helm/stable
+    targetRevision: 1.0.12
+    error: same as adapter
+  - app: confluent-operator
+    chart: confluent-for-kubernetes
+    repoURL: https://packages.confluent.io/helm
+    targetRevision: 0.1351.24
+    error: |
+      Public chart. Operator image inferred to be
+      docker.io/confluentinc/confluent-operator:0.1351.24 (matches chart
+      version convention). Operand images (cp-server, cp-kafka,
+      cp-schema-registry, cp-kafka-connect, cp-zookeeper, init-container)
+      are picked at CR-create time by the operator and not knowable from
+      the operator chart alone.
+  - app: redis
+    chart: redis
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 19.6.0
+    error: |
+      Bitnami Helm repo — chart pull may fail post-Aug-2025 due to
+      Bitnami registry pay-walling. The override of bitnami/kubectl
+      to registry.k8s.io/kubectl is captured above; main redis image
+      tag still inherits chart default.
+  - app: redpanda-console
+    chart: console
+    repoURL: https://charts.redpanda.com
+    targetRevision: 3.2.0
+    error: |
+      Public chart. Default image redpandadata/console — tag bundled
+      in chart 3.2.0.
+  - app: pgadmin
+    chart: pgadmin4
+    repoURL: https://helm.runix.net
+    targetRevision: 1.50.0
+    error: |
+      Public chart. Default image dpage/pgadmin4 — tag bundled in
+      chart 1.50.0.
+  - app: mailpit
+    chart: mailpit
+    repoURL: https://jouve.github.io/charts/
+    targetRevision: 0.23.1
+    error: |
+      Public chart. Default image axllent/mailpit — tag bundled in
+      chart 0.23.1.
+  - app: openbao
+    chart: openbao
+    repoURL: https://openbao.github.io/openbao-helm
+    targetRevision: 0.19.1
+    error: |
+      Public chart. Default image openbao/openbao — tag bundled in
+      chart 0.19.1.
+  - app: vswh
+    chart: vault-secrets-webhook
+    repoURL: ghcr.io/bank-vaults/helm-charts
+    targetRevision: 1.22.1
+    error: |
+      OCI chart on GHCR. Default image
+      ghcr.io/bank-vaults/vault-secrets-webhook — tag = chart appVersion.
+
+local_charts_no_failure:
+  # These two ArgoCD apps point at FVH local chart paths in this
+  # repo (sourcePath != ""). They were read directly from the
+  # workspace; their image refs are listed above with
+  # confidence: explicit_override.
+  - app: bridge-secrets
+    sourcePath: helm/simpl-eval-bridge-secrets
+    images_used: []
+    notes: |
+      Pure Helm-templated Secret resources — no Pod images.
+  - app: cloudsql-proxy (common namespace)
+    sourcePath: helm/cloudsql-proxy
+    images_used:
+      - gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.16.0
+  - app: cloudsql-proxy-governance
+    sourcePath: helm/cloudsql-proxy
+    images_used:
+      - gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.16.0
+
+summary:
+  # Counts derived programmatically from the entries above. Breakdown:
+  #   unique_image_refs_listed = with_known_tag + with_inferred_tag = 3 + 23 = 26
+  #   with_inferred_tag splits into 8 chart_default_inferred + 15 registry_inferred_tag_unknown
+  #   ec_specific_image_refs = entries with is_ec_specific: true (registry.code.europa.eu)
+  apps_total: 28                           # 27 distinct + 1 dup (cloudsql-proxy x2)
+  apps_attempted: 28
+  apps_rendered_successfully: 0            # sandbox blocked all chart pulls
+  apps_partially_inferred: 25              # have Helm chart refs only (28 apps - 3 locally-known)
+  apps_fully_known_locally: 3              # bridge-secrets, cloudsql-proxy (common), cloudsql-proxy-governance
+  unique_image_refs_listed: 26             # see images: above (3 explicit_override + 8 chart_default_inferred + 15 registry_inferred_tag_unknown)
+  unique_image_refs_with_known_tag: 3      # explicit overrides: keycloak, kubectl, cloud-sql-proxy
+  unique_image_refs_with_inferred_tag: 23  # 8 chart_default_inferred + 15 registry_inferred_tag_unknown
+  ec_specific_image_refs: 15               # all 14 SIMPL business services + openbao-config (Job)
+  monitoring_leaks: 0                      # subject to render verification
+  crossplane_leaks: 0
+  hardcoded_pull_secret_names_to_audit: [regcred, gitlab-secret]
+  caveat: |
+    All SIMPL chart image tags listed as `<chart-pinned>` MUST be
+    verified by an actual chart render. To do so, run from a host
+    with helm + network egress to code.europa.eu:
+
+      for f in argocd/applicationsets/simpl-eval/apps/*.yaml; do
+        chart=$(yq -r '.chart' "$f")
+        repo=$(yq -r '.repoURL' "$f")
+        rev=$(yq -r '.targetRevision' "$f")
+        [ "$chart" = "" ] && continue
+        helm pull --repo "$repo" "$chart" --version "$rev" --untar -d /tmp/sboms
+        yq -r '.valuesObject' "$f" > /tmp/sboms/$chart/values-fvh.yaml
+        ARGOCD_APP_SOURCE_TARGET_REVISION="$rev" \
+        ARGOCD_APP_NAME="simpl-eval-$(yq -r .name $f)" \
+        ARGOCD_APP_NAMESPACE="$(yq -r .namespace $f)" \
+          helm template /tmp/sboms/$chart -f /tmp/sboms/$chart/values-fvh.yaml \
+            | grep -E '^\s*image:' | sort -u
+      done
+
+    When tags are obtained, replace each `<chart-pinned>` placeholder
+    with the actual `name:tag` string and bump
+    summary.unique_image_refs_with_known_tag accordingly.

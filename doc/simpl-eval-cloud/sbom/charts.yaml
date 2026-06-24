@@ -1,0 +1,1198 @@
+# SIMPL-Open Helm Chart Inventory (Forum Virium Helsinki, simpl-eval ApplicationSet)
+#
+# baseline: authority-iaa v1.2.23 (Option 1 / bypass-the-umbrella adopted; IAA component bumps completed 2026-06-15)
+# refresh:  2026-06-15
+#
+# Per the adopted strategy (Option 1, accepted), FVH continues the bypass-the-umbrella
+# pattern: we materialise individual ArgoCD Applications and pin each IAA
+# component to the coherent `authority-iaa v1.2.23` set (the release whose
+# realm exports + keycloak-authenticator SPI 2.7.1 we deploy). This is one
+# IAA patch AHEAD of what the v3.1.0 umbrella ships (`authority-iaa v1.2.17`)
+# — see the adoption analysis for why. The published umbrella chart
+# `authority` at code.europa.eu/api/v4/projects/902/packages/helm/stable
+# v3.1.0 (authority-iaa 1.2.17 + authority-gaia-x-edc 1.0.1 +
+# authority-monitoring 0.0.6 as 3 subcharts) is NOT deployed by FVH.
+#
+# `pinned_version` is FVH's actual pin (the v1.2.23 set for IAA components).
+# `umbrella_recommended` is what `governance-authority v3.1.0` ships
+# (authority-iaa v1.2.17) — so for the 8 IAA components the two now DIVERGE
+# (FVH ahead by one patch; authentication-provider is the exception — FVH
+# stays on the 2.8.1 fork, behind the umbrella's 2.12.4). The actual deployed
+# state still tracks the pre-sync pins until ArgoCD syncs — see
+# the internal live-version snapshot for live deployed versions.
+#
+# Method
+# ------
+# Per-app entries derived from `argocd/applicationsets/simpl-eval/apps/*.yaml`
+# (28 ArgoCD Applications, deployed: true) plus the v3.1.0 / authority-iaa
+# v1.2.17 component pin table from the adoption analysis. Umbrella-only entries derived from the v3.1.0 umbrella shape
+# documented in the adoption decision.
+#
+# `latest_version` for SIMPL charts comes from the GitLab REST API tag list
+# (`/projects/<id>/repository/tags?order_by=updated`), refreshed 2026-05-26.
+# Latest versions for third-party charts come from the chart-repo
+# `index.yaml` or the upstream GitHub releases API. Where outbound auth
+# was required (Bitnami pay-walled registry, GHCR OCI tags), the field is
+# set to `unknown-auth-required` per the agent contract.
+#
+# `umbrella_recommended` is the version pinned by `authority-iaa v1.2.17`
+# (governance-authority v3.1.0). For charts the v3.1.0 umbrella does not
+# pin (e.g. FVH-internal helm/cloudsql-proxy, helm/simpl-eval-bridge-secrets),
+# the field is null. For charts where FVH deliberately overrides the
+# umbrella's chart choice (e.g. keycloakx vs bitnami/keycloak, or simpl-fe
+# which v3.1.0 replaces with 5 per-component fe-* charts), the field is
+# null with a note explaining why.
+#
+# `monitoring_refs` and `crossplane_refs` were resolved by listing
+# `templates/` of every chart via the GitLab repository tree API (or, for
+# third-party charts, by chart-repo inspection / known defaults). Per the
+# Phase-2 BROAD-scope decision, monitoring_refs is split into TWO
+# sub-fields per chart so the Prometheus-stack vs. Elastic-stack
+# question stays separable:
+#   - prometheus_refs: templates referencing monitoring.coreos.com/* kinds
+#                      (ServiceMonitor, PodMonitor, PrometheusRule).
+#   - eck_refs:        templates referencing *.k8s.elastic.co kinds
+#                      (Elasticsearch, Kibana, ApmServer, Beat,
+#                       Logstash; ECK-CRD set).
+# Backwards-compat: the legacy `monitoring_refs` key is preserved as the
+# union of the two for any tooling still reading it.
+# No SIMPL chart emits ServiceMonitor / PodMonitor / PrometheusRule
+# resources — the SIMPL stack uses Elastic Cloud Operator (ECK) CRDs
+# (eck-monitoring chart) rather than the Prometheus Operator stack. No
+# SIMPL chart references crossplane.io / Composition / XRD APIs. The
+# umbrella `monitoring.enabled` toggle in common_components gates the
+# `eck-monitoring` AND `eck-operator` Applications — not Prometheus
+# stack assets. (See the `audit/monitoring-eck-coupling.md` Phase-2
+# auditor output for the full per-chart yes/no.)
+#
+# CMP placeholder substitution (`containers/argocd-cmp/internal/cmp`)
+# replaces `${PROJECT_RELEASE_VERSION}`, `${NAMESPACE}`, `${ARGOCDNAMESPACE}`,
+# `${PROJECT}`, `${NAMESPACETAG}`, and `${AUTHNAMESPACETAG}` at template
+# time. The placeholders affect chart-version stamps and metadata only;
+# they do not introduce new manifest kinds that would alter monitoring or
+# Crossplane scan results.
+#
+# Schema notes
+# ------------
+# - parent: "governance-authority" | "common-components" | null. A chart can
+#   appear in BOTH umbrellas (e.g. vault-secrets-webhook is referenced by
+#   common_components only — both umbrellas pin it but only one deploys).
+#   When deployed as a standalone Application, parent is recorded as the
+#   umbrella that originally specified the dependency.
+# - chart_yaml_appVersion: literal value of `appVersion` in the chart's
+#   Chart.yaml. SIMPL charts use the `${PROJECT_RELEASE_VERSION}` token,
+#   which CMP rewrites to the chart_version at render time.
+# - monitoring_toggle: dotted path of the values key that gates monitoring
+#   resources. `none` if the chart has no toggle (i.e. always emits
+#   monitoring resources, or never emits them).
+# - umbrella_recommended: chart version pinned by the v3.1.0 umbrella
+#   (authority-iaa v1.2.17 subchart); null if the umbrella does not
+#   reference this chart.
+
+charts:
+  # =========================================================================
+  # SIMPL-Open charts — code.europa.eu/api/v4/projects/<id>/packages/helm/stable
+  # =========================================================================
+
+  - name: poc-charts
+    aliases: [adapter]
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/759/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.0.14
+    umbrella_recommended: 1.0.14
+    latest_version: 1.0.23
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/agents/adapters/poc-adapter
+    source_ref: v1.0.14
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Adapter (POC). authority-iaa v1.2.17 does not pin a different version — on par with v3.1.0 candidate. Vault-injected secrets via `vault.hashicorp.com/*` annotations on the Deployment, not via PrometheusRule."
+
+  - name: authentication-provider
+    deployed: true
+    parent: governance-authority
+    repo: ghcr.io/forumviriumhelsinki  # FVH fork (vendored at helm/authentication-provider); NOT the upstream project 939 registry
+    repo_kind: oci
+    pinned_version: 2.8.1  # FVH fork @ upstream 2.8.0 baseline (internal ref) — NOT the v1.2.17/v1.2.23 upstream chart 2.12.4
+    umbrella_recommended: 2.12.4  # what governance-authority v3.1.0 / authority-iaa v1.2.17 (and v1.2.23) ship
+    latest_version: 2.12.4  # latest upstream chart (project 939); FVH stays on the fork
+    source_repo: https://github.com/ForumViriumHelsinki/infrastructure  # helm/authentication-provider (fork of upstream project 939)
+    source_ref: helm/authentication-provider
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Job, Role, RoleBinding, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: |
+      FVH deploys a FORK pinned at 2.8.1 (upstream 2.8.0 baseline, vendored at
+      helm/authentication-provider, published to GHCR; internal refs), NOT the
+      upstream 2.12.4 that authority-iaa v1.2.17/v1.2.23 pins. The fork's only
+      delta vs upstream 2.8.0 is the create-secret Job: a deterministic name +
+      post-install/post-upgrade Helm hook, which ended the permanent ArgoCD
+      Missing/OutOfSync (every other template byte-identical). The
+      cosmetic-Missing hook fix upstream landed in 2.14.0-SNAPSHOT.2066
+      (authority-iaa v1.4.x) — NOT in v3.1.0 / v1.2.23 — so a forward bump to
+      the stable 2.12.x line would reintroduce the issue; that is why FVH stays
+      on the fork. passCredentials required for the ghcr.io OCI registry. This
+      is the one IAA component where FVH is BEHIND the umbrella's recommended
+      pin (by deliberate choice), not ahead."
+
+  - name: fc-service
+    aliases: [xsfc-catalogue]
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/820/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.0.12
+    umbrella_recommended: 1.0.12  # v3.1.0 / authority-iaa v1.2.17 does not bump fc-service
+    latest_version: 1.0.19
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/fc-service
+    source_ref: v1.0.12
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies:
+      - name: postgresql
+        version: 12.4.3
+        repository: oci://registry-1.docker.io/bitnamicharts
+        condition: postgresql.enabled
+      - name: neo4j
+        version: 5.14.0
+        repository: https://neo4j.github.io/helm-charts/
+    template_kinds: [Deployment, HPA, Ingress, Secret, PersistentVolume, PersistentVolumeClaim, Service, ServiceAccount, "test (Job)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "ONLY chart in the SIMPL stack with embedded sub-charts (vendored bitnami postgresql 12.4.3 + neo4j 5.14.0 tarballs). PostgreSQL is the pay-walled `bitnamicharts` reference — chart bundles a copy so it still resolves. On par with v3.1.0 candidate (authority-iaa v1.2.17 does not bump fc-service)."
+
+  - name: tier1-gateway
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/772/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.12.6  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.12.4)
+    umbrella_recommended: 2.12.4  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.12.6
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/network/tier1-gateway
+    source_ref: v2.12.6
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.0 → 2.12.6 (2026-06-15) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.12.4). Per-component audit: pin-only edit (chart templates byte-identical within the line; only the image tag + an additive nginx CORS ingress annotation differ)."
+
+  - name: tier2-proxy
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1112/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.5.5  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 1.5.4)
+    umbrella_recommended: 1.5.4  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 1.5.5
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/network/tier2-proxy
+    source_ref: v1.5.5
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 1.2.1 → 1.5.5 (2026-06-15) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (1.5.4). Largest jump in the set (+3 minor). Per-component audit: pin-only edit (chart diff = image tag + cosmetic template changes; no new required keys, no Kafka/vault/datasource dependency). Watch: FVH keeps a 500Mi memory limit vs the chart's 1Gi default — OOM watch after the +3-minor image rollout."
+
+  - name: openbao-config
+    deployed: true
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1258/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.2.3
+    umbrella_recommended: 1.2.3  # v3.1.0 / common_components v3.1.0 — not bumped by the v3.1.0 component table
+    latest_version: 1.3.6
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/openbao-config
+    source_ref: v1.2.3
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: ["Job (initContainers)", Secret]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Init-only Job: enables KV/transit secret engines, creates secrets from VAULT_TOKEN. Image: quay.io/openbao/openbao:2.4.0. v3.1.0 candidate keeps 1.2.3 (the v3.1.0 component table does not bump openbao-config). Upstream 1.3.6 available — out-of-scope for the v3.1.0 / authority-iaa bump."
+
+  - name: onboarding
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/770/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.12.8  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.12.7)
+    umbrella_recommended: 2.12.7  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.12.8
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/onboarding
+    source_ref: v2.12.8
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: ["ConfigMap (incl. Aruba/OVH/T-Systems CA truststores+keystores under files/)", Deployment, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.1 → 2.12.8 (internal ref) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.12.7). Bundles binary keystore.p12 / truststore.jks files for three CAs (aruba, ovh, tsystem) inside the chart tarball. Required paired runtime config (email-service.*, keycloak.*) per internal refs."
+
+  - name: simpl-fe
+    aliases: [frontend]
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/769/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.7.1
+    umbrella_recommended: null  # NOT pinned in v3.1.0 umbrella — see notes
+    latest_version: 2.7.1
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/simpl-fe
+    source_ref: v2.7.1
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, HPA, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: |
+      The v3.1.0 governance-authority umbrella does NOT include a
+      `simpl_fe:` block — the umbrella's frontend story is now entirely
+      per-component fe-* charts (fe-authentication-provider,
+      fe-users-and-roles, fe-identity-provider, fe-onboarding,
+      fe-security-attribute-provider) enabled by default in v3.1.0.
+      FVH continues to deploy the monolithic simpl-fe chart standalone
+      per the adopted strategy (preserve the current FE topology choice).
+      simpl-fe@2.7.1 is the latest tag published by the project (no new
+      releases since 2026-03-19). Re-evaluate alongside the fe-* charts
+      when planning a future cutover to the v3.1.0 FE-modular topology.
+
+  - name: identity-provider
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/913/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.11.4  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.11.3)
+    umbrella_recommended: 2.11.3  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.12.0-rc.2018  # latest dev tag; stable channel is 2.11.4
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/identity-provider
+    source_ref: v2.11.4
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, EJBCATemplateSecret, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.0 → 2.11.4 (2026-06-15) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.11.3). +3 minor. Per-component audit: pin-only edit (chart diff = image tag + namespaced HPA name; EJBCA spring.ssl.bundle.jks.ejbca schema + appConfig render path byte-identical, so internal refs overrides still apply). Newer 2.12.0-rc tag exists on the dev track but is not stable."
+
+  - name: infrastructure-consumption-monitoring-service
+    aliases: [icm]
+    deployed: true
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1240/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.3.1
+    umbrella_recommended: 2.3.1  # common_components v3.1.0 — not bumped by the v3.1.0 component table
+    latest_version: 2.6.1
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-monitoring/infrastructure-consumption-monitoring-service
+    source_ref: v2.3.1
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Despite the name, this service does NOT emit Prometheus or ServiceMonitor resources. It exposes its own consumption-monitoring REST API. v3.1.0 candidate keeps 2.3.1 (the v3.1.0 component table does not bump icm)."
+
+  - name: simpl-notification-service
+    aliases: [notification]
+    deployed: true
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1002/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.1.1
+    umbrella_recommended: 2.1.1  # common_components v3.1.0 — not bumped by the v3.1.0 component table
+    latest_version: 2.6.2
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-monitoring/simpl-notification-service
+    source_ref: v2.1.1
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "v3.1.0 candidate keeps 2.1.1 (the v3.1.0 component table does not bump simpl-notification-service)."
+
+  - name: security-attributes-provider
+    aliases: [sap]
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/861/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.12.4  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.12.3)
+    umbrella_recommended: 2.12.3  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.13.0-rc.1426  # latest tag; stable channel is 2.12.x
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/security-attributes-provider
+    source_ref: v2.12.4
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.0 → 2.12.4 (2026-06-15) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.12.3). Per-component audit: pin-only edit (chart diff = image tag + namespaced HPA name only; appConfig render path byte-identical; sap gains no Kafka client at 2.12.x). Newer 2.13.0-rc tag exists on the dev track."
+
+  - name: tier2-gateway
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/860/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.11.4  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.11.3)
+    umbrella_recommended: 2.11.3  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.11.4
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/network/tier2-gateway
+    source_ref: v2.11.4
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.0 → 2.11.4 (2026-06-15) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.11.3). +3 minor. Per-component audit: pin-only edit (chart diff = version strings only; spring-configmap kafka.yml render byte-identical, so the existing kafkaConfig PLAINTEXT block + the v3.0.4 route value files stay correct). Value-file ref stays v3.0.4 — app-values paths 404 at v3.1.x."
+
+  - name: simpl-schema-manager-charts
+    aliases: [schema-manager]
+    deployed: true
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1124/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 0.0.13
+    umbrella_recommended: 0.0.13  # common_components v3.1.0 — not bumped by the v3.1.0 component table
+    latest_version: 0.0.20
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/simpl-schema-manager
+    source_ref: v0.0.13
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, "Service (fuseki + schema manager)", ServiceAccount, StatefulSet]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "v3.1.0 candidate keeps 0.0.13 (the v3.1.0 component table does not bump schema-manager)."
+
+  - name: users-roles
+    deployed: true
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/771/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.12.9  # FVH pins authority-iaa v1.2.23 (ahead of v3.1.0's v1.2.17 pin 2.12.6)
+    umbrella_recommended: 2.12.6  # what governance-authority v3.1.0 / authority-iaa v1.2.17 ships
+    latest_version: 2.12.9
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/users-roles
+    source_ref: v2.12.9
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [ConfigMap, Deployment, HPA, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Bumped 2.8.0 → 2.12.9 (internal refs) per the adopted strategy — FVH pins the authority-iaa v1.2.23 set, one patch ahead of v3.1.0's v1.2.17 pin (2.12.6). The /tier1/v2 users API + the keycloak-authenticator SPI role lookup are why this had to align to v1.2.23 (closed internally)."
+
+  - name: kafka
+    deployed: true
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/976/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.2.0
+    umbrella_recommended: 1.2.0  # common_components v3.1.0 — not bumped by the v3.1.0 component table
+    latest_version: 1.2.2
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/kafka
+    source_ref: v1.2.0
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: ["Confluent Kafka (platform.confluent.io/v1beta1)", "Confluent KRaftController", ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Renders Confluent CRDs (Kafka, KRaftController) — requires the confluent-for-kubernetes operator to be installed first. Vault-injected SASL credentials via `vault.hashicorp.com/*` pod annotations."
+
+  # =========================================================================
+  # Charts present in v3.1.0 umbrella but NOT deployed by FVH
+  # =========================================================================
+
+  - name: pg-cluster
+    deployed: false
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1024/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.1.1
+    umbrella_recommended: 1.1.1
+    latest_version: 1.2.0
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/pg-cluster
+    source_ref: v1.1.1
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: ["postgresql (acid.zalan.do/v1)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Renders a Zalando postgres-operator `postgresql` CR. NOT deployed — FVH uses Cloud SQL via cloudsql-proxy instead. Would require zalando/postgres-operator on cluster."
+
+  - name: openbao-init
+    deployed: false
+    parent: common-components
+    repo: https://code.europa.eu/api/v4/projects/1347/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.0.0
+    umbrella_recommended: 1.0.0
+    latest_version: 1.1.0
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/openbao-init
+    source_ref: v1.0.0
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Job, PersistentVolumeClaim, RBAC]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Init-only chart that initializes/unseals an OpenBao instance and stores root token in PVC. Replaced by FVH's bridge-secrets pattern + manual openbao bootstrap. NOT deployed."
+
+  - name: eck-monitoring
+    deployed: false
+    parent: common-components  # also referenced by governance-authority
+    repo: https://code.europa.eu/api/v4/projects/828/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 0.3.3
+    umbrella_recommended: 0.0.6  # authority-monitoring 0.0.6 (v3.1.0 umbrella subchart)
+    latest_version: 0.5.6
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-monitoring/eck-monitoring
+    source_ref: v0.3.3
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds:
+      - "elasticsearch.k8s.elastic.co/v1 Elasticsearch"
+      - "kibana.k8s.elastic.co/v1 Kibana"
+      - "apm.k8s.elastic.co/v1 ApmServer"
+      - "beat.k8s.elastic.co/v1beta1 (Filebeat, Heartbeat, Metricbeat)"
+      - "logstash.k8s.elastic.co Logstash (beats, single, syslog)"
+      - "OpenTelemetry Collector"
+    prometheus_refs: []
+    eck_refs:
+      - charts/templates/elasticsearch.yaml
+      - charts/templates/kibana.yaml
+      - charts/templates/apm-server.yaml
+      - charts/templates/filebeat.yaml
+      - charts/templates/heartbeat.yaml
+      - charts/templates/metricbeat.yaml
+      - charts/templates/logstash_beats.yaml
+      - charts/templates/logstash_single.yaml
+      - charts/templates/logstash_syslog.yaml
+      - charts/templates/otel-collector.yaml
+    monitoring_refs:
+      - charts/templates/elasticsearch.yaml
+      - charts/templates/kibana.yaml
+      - charts/templates/apm-server.yaml
+      - charts/templates/filebeat.yaml
+      - charts/templates/heartbeat.yaml
+      - charts/templates/metricbeat.yaml
+      - charts/templates/logstash_beats.yaml
+      - charts/templates/logstash_single.yaml
+      - charts/templates/logstash_syslog.yaml
+      - charts/templates/otel-collector.yaml
+    monitoring_toggle: "monitoring.enabled (in common_components umbrella; eck-monitoring chart itself has enableMonitoring: false default)"
+    crossplane_refs: []
+    notes: |
+      v3.1.0 reshapes monitoring as a dedicated `authority-monitoring 0.0.6`
+      subchart of the new published `authority` umbrella (project 902).
+      The umbrella_recommended field above tracks the authority-monitoring
+      subchart version rather than the standalone eck-monitoring chart.
+      The SIMPL stack's monitoring story is still built on the Elastic Cloud
+      Operator (ECK), NOT on Prometheus Operator. NOT deployed by FVH.
+      All eck_refs reference Elastic CRDs (*.k8s.elastic.co), not
+      monitoring.coreos.com types. The `monitoring.enabled` toggle on the
+      umbrella common-components values gates BOTH this chart AND the
+      eck-operator chart (helm.elastic.co/eck-operator 3.0.0) and the
+      eck-operator-crds chart.
+
+  # Per-component frontends — enabled by default in v3.1.0 but NOT deployed by FVH
+  - name: fe-authentication-provider
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1308/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.8.3
+    umbrella_recommended: 2.9.x  # authority-iaa v1.2.17 enables fe-* by default; exact pin in the adoption decision references
+    latest_version: 2.9.3
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/fe-authentication-provider
+    source_ref: v2.8.3
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Per-component frontend split from monolithic simpl-fe. Enabled by default in v3.1.0 / authority-iaa v1.2.17. NOT deployed by FVH (we keep the monolithic simpl-fe chart per the adopted bypass-the-umbrella strategy (Option 1))."
+
+  - name: fe-users-and-roles
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1310/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.8.3
+    umbrella_recommended: 2.12.x  # authority-iaa v1.2.17 enables fe-* by default
+    latest_version: 2.12.5
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/fe-users-and-roles
+    source_ref: v2.8.3
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Enabled by default in v3.1.0 / authority-iaa v1.2.17. NOT deployed by FVH (per the adopted bypass-the-umbrella strategy (Option 1), keep monolithic simpl-fe)."
+
+  - name: fe-identity-provider
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1311/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.8.4
+    umbrella_recommended: 2.10.x  # authority-iaa v1.2.17 enables fe-* by default
+    latest_version: 2.10.6
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/fe-identity-provider
+    source_ref: v2.8.4
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Enabled by default in v3.1.0 / authority-iaa v1.2.17. NOT deployed by FVH (per the adopted bypass-the-umbrella strategy (Option 1))."
+
+  - name: fe-onboarding
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1307/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.8.2
+    umbrella_recommended: 2.12.x  # authority-iaa v1.2.17 enables fe-* by default
+    latest_version: 2.12.3
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/fe-onboarding
+    source_ref: v2.8.2
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Enabled by default in v3.1.0 / authority-iaa v1.2.17. NOT deployed by FVH (per the adopted bypass-the-umbrella strategy (Option 1))."
+
+  - name: fe-security-attribute-provider
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1309/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 2.8.0
+    umbrella_recommended: 2.9.x  # authority-iaa v1.2.17 enables fe-* by default
+    latest_version: 2.9.3
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/fe-security-attribute-provider
+    source_ref: v2.8.0
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Enabled by default in v3.1.0 / authority-iaa v1.2.17. NOT deployed by FVH (per the adopted bypass-the-umbrella strategy (Option 1))."
+
+  - name: schema-manager-ui
+    deployed: false
+    parent: governance-authority
+    repo: https://code.europa.eu/api/v4/projects/1257/packages/helm/stable
+    repo_kind: gitlab-helm
+    pinned_version: 1.1.1
+    umbrella_recommended: 1.1.1
+    latest_version: 1.4.1
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/schema-manager-ui
+    source_ref: v1.1.1
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "UI front-end for schema-manager. NOT deployed by FVH (we ship without a schema-manager-ui)."
+
+  # =========================================================================
+  # FVH internal charts (in this repo)
+  # =========================================================================
+
+  - name: cloudsql-proxy
+    deployed: true  # deployed twice (common + governance namespaces)
+    parent: null
+    repo: https://github.com/ForumViriumHelsinki/infrastructure.git
+    repo_kind: github-helm
+    pinned_version: HEAD
+    umbrella_recommended: null
+    latest_version: HEAD
+    source_repo: https://github.com/ForumViriumHelsinki/infrastructure
+    source_ref: helm/cloudsql-proxy
+    chart_yaml_appVersion: ~
+    chart_dependencies: []
+    template_kinds: [Deployment, Service, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "FVH internal chart, replaces SIMPL pg-cluster + openbao-init for Cloud SQL backed authority + common namespaces. Pending release-please publish to GHCR (then will switch to OCI)."
+
+  - name: simpl-eval-bridge-secrets
+    deployed: true
+    parent: null
+    repo: https://github.com/ForumViriumHelsinki/infrastructure.git
+    repo_kind: github-helm
+    pinned_version: HEAD
+    umbrella_recommended: null
+    latest_version: HEAD
+    source_repo: https://github.com/ForumViriumHelsinki/infrastructure
+    source_ref: helm/simpl-eval-bridge-secrets
+    chart_yaml_appVersion: ~
+    chart_dependencies: []
+    template_kinds: [Secret]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Replacement for SIMPL openbao-init: stamps shared bridge secrets across namespaces from a single ExternalSecret-backed source."
+
+  # =========================================================================
+  # Third-party charts (deployed)
+  # =========================================================================
+
+  - name: confluent-for-kubernetes
+    aliases: [confluent-operator]
+    deployed: true
+    parent: common-components
+    repo: https://packages.confluent.io/helm
+    repo_kind: helm
+    pinned_version: 0.1351.24
+    umbrella_recommended: 0.1351.24  # common_components v3.1.0 — not bumped
+    latest_version: 0.1514.40
+    source_repo: https://github.com/confluentinc/confluent-kubernetes-helm
+    source_ref: v0.1351.24
+    chart_yaml_appVersion: 2.11.0  # canonical CFK release behind 0.1351.x channel
+    chart_dependencies: []
+    template_kinds: [Deployment, ClusterRole, ClusterRoleBinding, Service, ServiceAccount, ValidatingWebhookConfiguration, MutatingWebhookConfiguration, "CRDs (Kafka, Connect, KsqlDB, KRaftController, ControlCenter, SchemaRegistry, KafkaRestProxy, ZooKeeper, …)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: "prometheusRule.create (default false), serviceMonitor (subsumed under operator metrics; default false)"
+    crossplane_refs: []
+    notes: |
+      Operator chart. Per the umbrella common-components values it is
+      deployed with kRaftEnabled=true. CRDs are managed in a separate
+      'confluent-crds' Application (skipCrds=true on this app, with
+      ServerSideApply=true to bypass the 256 KiB annotation limit).
+      The chart contains optional ServiceMonitor/PrometheusRule
+      templates that ARE off by default.
+
+  - name: ejbca-community-helm
+    aliases: [ejbca]
+    deployed: true
+    parent: governance-authority
+    repo: https://keyfactor.github.io/ejbca-community-helm
+    repo_kind: helm
+    pinned_version: 1.0.7
+    umbrella_recommended: 1.0.7  # unchanged in v3.1.0 per the adoption decision
+    latest_version: 1.0.7
+    source_repo: https://github.com/Keyfactor/ejbca-community-helm
+    source_ref: 1.0.7
+    chart_yaml_appVersion: "8.3.2.2"
+    chart_dependencies: []
+    template_kinds: [Deployment, Ingress, Service, ServiceAccount, ConfigMap]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Unchanged in v3.1.0 (the v3.1.0 component table)."
+
+  - name: keycloakx
+    aliases: [keycloak]
+    deployed: true
+    parent: governance-authority  # FVH overrides v3.1.0's bitnami/keycloak 25.2.0 back to codecentric/keycloakx
+    repo: https://codecentric.github.io/helm-charts
+    repo_kind: helm
+    pinned_version: 7.1.8
+    umbrella_recommended: null  # v3.1.0 umbrella pins bitnami/keycloak 25.2.0; FVH overrides (see notes)
+    latest_version: 7.1.11
+    source_repo: https://github.com/codecentric/helm-charts/tree/master/charts/keycloakx
+    source_ref: keycloakx-7.1.8
+    chart_yaml_appVersion: "26.3.5"
+    chart_dependencies: []
+    template_kinds: [StatefulSet, Service, Ingress, "ServiceMonitor (optional)", PodDisruptionBudget, RBAC, "…"]
+    prometheus_refs: [templates/servicemonitor.yaml]
+    eck_refs: []
+    monitoring_refs: [templates/servicemonitor.yaml]
+    monitoring_toggle: "metrics.enabled (default false)"
+    crossplane_refs: []
+    notes: |
+      v3.1.0 / authority-iaa v1.2.17 SPECIAL CASE.
+
+      Upstream v3.1.0 umbrella switches Keycloak to `bitnami/keycloak 25.2.0`
+      (a re-introduction of the Bitnami chart family). FVH OVERRIDES this
+      back to `codecentric/keycloakx 7.1.8` per the adopted bypass-the-umbrella
+      strategy (Option 1), which preserves the project decision to avoid
+      Bitnami charts and images (Bitnami pay-walled the maintained
+      `oci://registry-1.docker.io/bitnamicharts/` registry and corrupted the
+      free `bitnamilegacy/keycloak` Docker Hub namespace — the latter has a
+      broken Quarkus serialization cache).
+
+      This override follows the project's dependency-management policy
+      (avoid Bitnami charts and images; prefer the codecentric/keycloakx
+      chart and quay.io Keycloak images).
+
+      The codecentric chart ships ServiceMonitor support but it is gated by
+      `metrics.enabled=false` and we leave it off.
+
+  - name: openbao
+    deployed: true
+    parent: common-components
+    repo: https://openbao.github.io/openbao-helm
+    repo_kind: helm
+    pinned_version: 0.19.1
+    umbrella_recommended: 0.19.1  # common_components v3.1.0 — not bumped
+    latest_version: 0.28.3
+    source_repo: https://github.com/openbao/openbao-helm
+    source_ref: openbao-0.19.1
+    chart_yaml_appVersion: "2.4.0"
+    chart_dependencies: []
+    template_kinds: [StatefulSet, Service, ServiceAccount, Ingress, RBAC, "ServiceMonitor (optional)"]
+    prometheus_refs: [templates/server-prometheusrules.yaml, templates/server-servicemonitor.yaml]
+    eck_refs: []
+    monitoring_refs: [templates/server-prometheusrules.yaml, templates/server-servicemonitor.yaml]
+    monitoring_toggle: "serverTelemetry.serviceMonitor.enabled, serverTelemetry.prometheusRules.enabled (both default false)"
+    crossplane_refs: []
+    notes: "Significant version drift: 0.19.1 → 0.28.3. v3.1.0 umbrella does not bump this; the adoption decision mentions OpenBao-vault improvements upstream but the chart pin is unchanged. Worth a separate upgrade evaluation."
+
+  - name: vault-secrets-webhook
+    aliases: [vswh]
+    deployed: true
+    parent: common-components  # umbrella keeps it under common; FVH deploys standalone
+    repo: ghcr.io/bank-vaults/helm-charts
+    repo_kind: oci
+    pinned_version: 1.22.1
+    umbrella_recommended: 1.22.1  # common_components v3.1.0 — not bumped
+    latest_version: 1.23.0
+    source_repo: https://github.com/bank-vaults/vault-secrets-webhook
+    source_ref: v1.22.1
+    chart_yaml_appVersion: "1.22.0"
+    chart_dependencies: []
+    template_kinds: [Deployment, MutatingWebhookConfiguration, Service, ServiceAccount, RBAC]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: "metrics.serviceMonitor.enabled (default false)"
+    crossplane_refs: []
+    notes: "Upstream renamed to `bank-vaults/secrets-webhook` v0.x; we still track the legacy name. May need a rename when bumping."
+
+  - name: console
+    aliases: [redpanda-console]
+    deployed: true
+    parent: common-components
+    repo: https://charts.redpanda.com
+    repo_kind: helm
+    pinned_version: 3.2.0
+    umbrella_recommended: 3.2.0  # common_components v3.1.0 — not bumped
+    latest_version: 3.7.1
+    source_repo: https://github.com/redpanda-data/console
+    source_ref: v3.2.0
+    chart_yaml_appVersion: "v3.2.0"
+    chart_dependencies: []
+    template_kinds: [Deployment, Service, Ingress, ServiceAccount, "ServiceMonitor (optional)"]
+    prometheus_refs: [templates/servicemonitor.yaml]
+    eck_refs: []
+    monitoring_refs: [templates/servicemonitor.yaml]
+    monitoring_toggle: "serviceMonitor.enabled (default false)"
+    crossplane_refs: []
+
+  - name: mailpit
+    deployed: true
+    parent: common-components
+    repo: https://jouve.github.io/charts/
+    repo_kind: helm
+    pinned_version: 0.23.1
+    umbrella_recommended: 0.23.1  # common_components v3.1.0 — not bumped
+    latest_version: 0.34.1
+    source_repo: https://github.com/jouve/charts
+    source_ref: mailpit-0.23.1
+    chart_yaml_appVersion: "v1.21.5"
+    chart_dependencies: []
+    template_kinds: [StatefulSet, Service, Ingress, ServiceAccount]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Local SMTP testing only. Used in dev but also wired into common-components for convenience."
+
+  - name: redis
+    deployed: true
+    parent: governance-authority
+    repo: https://charts.bitnami.com/bitnami
+    repo_kind: bitnami
+    pinned_version: 19.6.0
+    umbrella_recommended: 19.6.0  # v3.1.0 / authority-iaa v1.2.17 — unchanged per the adoption decision
+    latest_version: unknown-auth-required  # Bitnami pay-walled OCI registry
+    source_repo: https://github.com/bitnami/charts/tree/main/bitnami/redis
+    source_ref: redis/19.6.0
+    chart_yaml_appVersion: "7.4.0"
+    chart_dependencies: []
+    template_kinds: ["StatefulSet (master/replicas)", Service, ServiceAccount, NetworkPolicy, "ServiceMonitor (optional)", "PrometheusRule (optional)"]
+    prometheus_refs: [templates/metrics-svc.yaml, templates/metrics-servicemonitor.yaml, templates/prometheusrule.yaml]
+    eck_refs: []
+    monitoring_refs: [templates/metrics-svc.yaml, templates/metrics-servicemonitor.yaml, templates/prometheusrule.yaml]
+    monitoring_toggle: "metrics.enabled (default false), metrics.serviceMonitor.enabled (default false), metrics.prometheusRule.enabled (default false)"
+    crossplane_refs: []
+    notes: |
+      Bitnami chart — registry has migrated to a pay-walled OCI registry
+      with a separate `bitnamilegacy/` namespace for the free Docker Hub
+      images. Per dependency-management.md, this is on the watchlist
+      for migration to a non-Bitnami alternative. Image tag pinning is
+      handled in valuesObject; latest_version cannot be queried without
+      Bitnami subscription credentials. Unchanged at v3.1.0 (the adoption decision
+      component table).
+
+  - name: pgadmin4
+    aliases: [pgadmin]
+    deployed: true
+    parent: common-components
+    repo: https://helm.runix.net
+    repo_kind: helm
+    pinned_version: 1.50.0
+    umbrella_recommended: 1.50.0  # common_components v3.1.0 — not bumped
+    latest_version: 1.62.0
+    source_repo: https://github.com/rowanruseler/helm-charts
+    source_ref: pgadmin4-1.50.0
+    chart_yaml_appVersion: "9.5"
+    chart_dependencies: []
+    template_kinds: [Deployment, Service, Ingress, ServiceAccount, NetworkPolicy]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+
+  # =========================================================================
+  # Charts referenced by the v3.1.0 umbrella but NOT deployed
+  # (third-party operators referenced via monitoring.operator)
+  # =========================================================================
+
+  - name: postgres-operator
+    aliases: [pg-operator]
+    deployed: false
+    parent: common-components
+    repo: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
+    repo_kind: helm
+    pinned_version: 1.14.0  # umbrella default
+    umbrella_recommended: 1.14.0
+    latest_version: 1.15.1
+    source_repo: https://github.com/zalando/postgres-operator
+    source_ref: v1.14.0
+    chart_yaml_appVersion: "1.14.0"
+    chart_dependencies: []
+    template_kinds: [Deployment, ServiceAccount, ClusterRole, ClusterRoleBinding, ConfigMap, "CRDs (postgresqls.acid.zalan.do, postgresteams.acid.zalan.do, operatorconfigurations.acid.zalan.do)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Required if `pg-cluster` chart is deployed (it renders an `acid.zalan.do/v1 postgresql` CR). FVH uses Cloud SQL via cloudsql-proxy and does NOT install this operator."
+
+  - name: eck-operator
+    deployed: false
+    parent: common-components  # only declared in umbrella under monitoring.operator
+    repo: https://helm.elastic.co/
+    repo_kind: helm
+    pinned_version: "3.0.0"
+    umbrella_recommended: "3.0.0"  # authority-monitoring 0.0.6 (v3.1.0 umbrella subchart) tracks 3.x
+    latest_version: "3.4.0"
+    source_repo: https://github.com/elastic/cloud-on-k8s
+    source_ref: 3.0.0
+    chart_yaml_appVersion: "3.0.0"
+    chart_dependencies: []
+    template_kinds: [StatefulSet, ServiceAccount, ClusterRole, ClusterRoleBinding, Service, ValidatingWebhookConfiguration]
+    prometheus_refs: []
+    eck_refs: []  # operator chart itself, not consumer of CRDs
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Companion to eck-operator-crds. v3.1.0 wraps the eck stack as `authority-monitoring 0.0.6` subchart. Only deployed via common-components if monitoring.enabled=true. NOT deployed by FVH."
+
+  - name: eck-operator-crds
+    deployed: false
+    parent: common-components
+    repo: https://helm.elastic.co/
+    repo_kind: helm
+    pinned_version: "3.0.0"
+    umbrella_recommended: "3.0.0"
+    latest_version: "3.4.0"
+    source_repo: https://github.com/elastic/cloud-on-k8s
+    source_ref: 3.0.0
+    chart_yaml_appVersion: "3.0.0"
+    chart_dependencies: []
+    template_kinds: ["CRDs (elasticsearch, kibana, apmserver, beat, logstash, …)"]
+    prometheus_refs: []
+    eck_refs: []  # CRDs only — defines the kinds rather than emitting them
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "CRDs-only sibling chart of eck-operator. NOT deployed by FVH."
+
+  - name: redis-commander
+    deployed: false
+    parent: governance-authority  # disabled (enabled: false) in upstream values
+    repo: https://github.com/joeferner/redis-commander.git  # path: k8s/helm-chart/redis-commander
+    repo_kind: github-helm
+    pinned_version: master  # umbrella references master branch
+    umbrella_recommended: master
+    latest_version: master
+    source_repo: https://github.com/joeferner/redis-commander
+    source_ref: master
+    chart_yaml_appVersion: ~
+    chart_dependencies: []
+    template_kinds: [Deployment, Service]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: none
+    crossplane_refs: []
+    notes: "Disabled by default in the umbrella values (enabled: false). Local debugging tool for redis."
+
+  # =========================================================================
+  # Umbrella charts themselves (informational — we do NOT deploy these)
+  # =========================================================================
+
+  - name: authority
+    aliases: [governance-authority]  # name change at v3.1.0; the v3.0.x name was governance-authority
+    deployed: false
+    parent: null
+    repo: https://code.europa.eu/api/v4/projects/902/packages/helm/stable
+    repo_kind: gitlab-helm  # NEW in v3.1.0: published as a Helm chart, not a git-source umbrella
+    pinned_version: 3.1.0  # candidate target per the adopted strategy (FVH would consume via subchart-bypass per Option 1)
+    umbrella_recommended: 3.1.0
+    latest_version: 3.1.0
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/agents/governance-authority
+    source_ref: v3.1.0
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies:
+      # v3.1.0 distributes the umbrella as 3 subcharts:
+      - authority-iaa 1.2.17  # IAA components (auth-provider, users-roles, tier1/2-gateway, sap, onboarding, identity-provider, tier2-proxy, ejbca, redis, plus 5 fe-* charts enabled by default, plus bitnami/keycloak 25.2.0)
+      - authority-gaia-x-edc 1.0.1
+      - authority-monitoring 0.0.6  # subsumes the eck-monitoring / eck-operator / eck-operator-crds bundle that was previously in common_components
+    template_kinds: ["argoproj.io/v1alpha1 Application (filtered out by simpl-helm CMP when consumed via the bypass pattern)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: monitoring.enabled
+    crossplane_refs: []
+    notes: |
+      RENAMED + RESHAPED at v3.1.0. The v3.0.x umbrella was a git-sourced
+      `governance-authority` chart with ~25 nested chart references in
+      charts/values.yaml. v3.1.0 publishes a Helm chart `authority` at
+      project 902 that internally pins 3 subcharts.
+
+      Per the adopted strategy (Option 1), FVH continues to bypass this
+      umbrella entirely — we do NOT deploy the `authority` chart; we
+      continue to materialise individual ArgoCD Applications and bump
+      each component's targetRevision to match what `authority-iaa v1.2.17`
+      would pin (see the per-component entries above for the v3.1.0
+      pinned_version values).
+
+      An Option-2 path (deploy `authority` v3.1.0 as a single Application
+      with `extraValues.<component>.enabled: false` overrides) is sequenced
+      as a separate follow-up after Option 1 succeeds.
+
+  - name: common_components
+    deployed: false
+    parent: null
+    repo: https://code.europa.eu/simpl/simpl-open/development/agents/common_components.git
+    repo_kind: gitlab-git
+    pinned_version: v3.0.2  # last v3.0.x release; v3.1.0 subsumes common-components content into the authority umbrella
+    umbrella_recommended: subsumed-into-authority-3.1.0
+    latest_version: v3.1.0
+    source_repo: https://code.europa.eu/simpl/simpl-open/development/agents/common_components
+    source_ref: v3.0.2
+    chart_yaml_appVersion: ${PROJECT_RELEASE_VERSION}
+    chart_dependencies:
+      - openbao_init (SIMPL 1347)
+      - openbao_config (SIMPL 1258)
+      - openbao (openbao-helm)
+      - "monitoring.operator → eck-operator (helm.elastic.co)"
+      - "monitoring → eck-monitoring (SIMPL 828, v0.3.3)"
+      - vault_webhook (bank-vaults oci)
+      - confluent_operator (packages.confluent.io)
+      - kafka (SIMPL 976)
+      - redpanda (charts.redpanda.com)
+      - pg_operator (zalando)
+      - pg_admin (helm.runix.net)
+      - pg_cluster (SIMPL 1024)
+      - notification (SIMPL 1002)
+      - mailpit (jouve)
+      - infrastructure_consumption_monitoring_service (SIMPL 1240)
+    template_kinds: ["argoproj.io/v1alpha1 Application (filtered by simpl-helm CMP when consumed via the bypass pattern)"]
+    prometheus_refs: []
+    eck_refs: []
+    monitoring_refs: []
+    monitoring_toggle: monitoring.enabled
+    crossplane_refs: []
+    notes: |
+      SUBSUMED INTO `authority` AT v3.1.0. The v3.1.0 stack consolidates
+      common-components content into the single published `authority` Helm
+      chart (project 902) as the `authority-iaa`, `authority-gaia-x-edc`,
+      and `authority-monitoring` subcharts. There is no standalone v3.1.0
+      `common_components` release on the upstream release track that maps
+      one-to-one with the v3.0.2 shape — the `v3.1.0` tag on project 951
+      reflects the consolidation, not a continuation of the v3.0.x
+      structure.
+
+      FVH continues to bypass this umbrella per the adopted bypass-the-umbrella strategy (Option 1) — we
+      materialise individual ArgoCD Applications for each former
+      common-components child (kafka, confluent-operator, openbao,
+      openbao-config, mailpit, redpanda console, notification, icm,
+      vault-secrets-webhook, pgadmin4). The per-component entries
+      above carry the candidate v3.1.0 pins (which for these charts
+      are mostly unchanged — the v3.1.0 component table only bumps
+      the 8 IAA components).
+
+summary:
+  # Counts derived programmatically from the entries above. Breakdown:
+  #   total = deployed + umbrella_only_count + umbrella_charts
+  #         = 27 + 13 + 2 = 42
+  #   deployed = upstream_simpl_count + upstream_third_party_count + fvh_internal_count
+  #            = 16 + 9 + 2 = 27
+  #     (28 ArgoCD apps in the simpl-eval ApplicationSet — cloudsql-proxy is
+  #      deployed twice (common + governance namespaces) but counted once here.)
+  total: 42
+  deployed: 27   # 16 SIMPL upstream + 9 third-party + 2 FVH internal (cloudsql-proxy counted once although deployed twice)
+  upstream_simpl_count: 16   # deployed gitlab-helm charts from code.europa.eu
+  upstream_third_party_count: 9   # deployed third-party charts (helm/oci/bitnami)
+  fvh_internal_count: 2   # cloudsql-proxy, simpl-eval-bridge-secrets
+  umbrella_charts: 2   # authority (formerly governance-authority), common_components (informational; not deployed)
+  umbrella_only_count: 13   # entries deployed:false that are NOT the umbrella charts themselves:
+                            #   9 SIMPL upstream: pg-cluster, openbao-init, eck-monitoring,
+                            #     fe-authentication-provider, fe-users-and-roles, fe-identity-provider,
+                            #     fe-onboarding, fe-security-attribute-provider, schema-manager-ui
+                            #   4 third-party: postgres-operator, eck-operator, eck-operator-crds, redis-commander
+  on_par_with_umbrella: 15   # deployed charts whose pinned_version equals umbrella_recommended;
+                             # 4 deployed charts have umbrella_recommended: null (simpl-fe,
+                             # cloudsql-proxy, simpl-eval-bridge-secrets, keycloakx) and are
+                             # excluded from the comparison. As of 2026-06-15 the 8 IAA
+                             # components no longer match the v3.1.0 umbrella's v1.2.17 pins:
+                             # 7 are AHEAD (FVH on the v1.2.23 set) and 1 is BEHIND.
+  ahead_of_umbrella: 7       # users-roles, onboarding, tier1-gateway, security-attributes-provider,
+                             # tier2-gateway, identity-provider, tier2-proxy — FVH pins authority-iaa
+                             # v1.2.23, one patch ahead of v3.1.0's v1.2.17.
+  behind_umbrella: 1         # authentication-provider — FVH 2.8.1 fork vs umbrella 2.12.4 (deliberate; tracked internally)
+  with_prometheus_refs: 4   # keycloakx, openbao, console (redpanda), redis (bitnami) — all behind enabled=false toggles
+  with_eck_refs: 1          # eck-monitoring chart only (NOT deployed)
+  with_monitoring_refs: 5   # union of prometheus_refs (4) + eck_refs (1); legacy compat field
+  with_crossplane_refs: 0   # zero charts in the SIMPL stack reference crossplane.io / Composition / XRD
+  baseline: "authority-iaa v1.2.23 (Option 1 / bypass-the-umbrella adopted 2026-06-15; FVH ahead of v3.1.0's v1.2.17 IAA pins)"
+  notable_drift:
+    # With the authority-iaa v1.2.23 pins (adopted 2026-06-15), the 8 IAA
+    # component "behind 2.8.x" rows resolve. Remaining drift is third-party
+    # charts and SIMPL charts that the v3.1.0 component table does not bump
+    # (icm, notification, schema-manager, fc-service, poc-charts).
+    - chart: openbao
+      pinned: 0.19.1
+      latest: 0.28.3
+    - chart: confluent-for-kubernetes
+      pinned: 0.1351.24
+      latest: 0.1514.40
+    - chart: pgadmin4
+      pinned: 1.50.0
+      latest: 1.62.0
+    - chart: mailpit
+      pinned: 0.23.1
+      latest: 0.34.1
+    - chart: redpanda console
+      pinned: 3.2.0
+      latest: 3.7.1
+    - chart: poc-charts (adapter)
+      pinned: 1.0.14
+      latest: 1.0.23
+    - chart: fc-service
+      pinned: 1.0.12
+      latest: 1.0.19
+    - chart: simpl-schema-manager-charts
+      pinned: 0.0.13
+      latest: 0.0.20
+    - chart: icm
+      pinned: 2.3.1
+      latest: 2.6.1
+    - chart: notification
+      pinned: 2.1.1
+      latest: 2.6.2
+    - chart: openbao-config
+      pinned: 1.2.3
+      latest: 1.3.6
+    - chart: vault-secrets-webhook
+      pinned: 1.22.1
+      latest: 1.23.0
+  unresolved:
+    - chart: redis (bitnami)
+      reason: Bitnami pay-walled OCI registry; latest_version requires subscription auth
+
+# vim: set ft=yaml:

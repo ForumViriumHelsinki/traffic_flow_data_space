@@ -1,0 +1,314 @@
+# SIMPL-Open application source inventory for portability audit.
+# Scope: first-party charts referenced from argocd/applicationsets/simpl-eval/apps/*.yaml
+#        (those whose chart repoURL is on code.europa.eu).
+# Method: GitLab API v4 introspection of code.europa.eu projects (no clones).
+#         Per-project tag lookup matched the chart appVersion (== chart version due
+#         to ${PROJECT_RELEASE_VERSION} substitution in Chart.yaml).
+# Generated: 2026-04-28 (refreshed for v3.0.x state, post chart bumps).
+# Notes:
+#   - "app_repo" and "chart_repo" are the same project for SIMPL — each project
+#     ships its source AND its chart in /charts/. The chart targetRevision in our
+#     ApplicationSet is the helm package version published to the project's GitLab
+#     helm registry, which by convention equals the git tag (without "v" prefix).
+#   - "hardcoded_patterns" focuses on portability concerns surfaced by static
+#     inspection of charts/values.yaml and src/main/resources/application.yml.
+#     Pattern severity:
+#       high   — hardcoded europa.eu / simpl-europe.eu URLs that a deployer must
+#                actively override to avoid pointing at EC infrastructure.
+#       medium — hardcoded realm names, role names, sandbox/authority IDs that
+#                require values overrides and may leak EC operational naming.
+#       low    — chart-default values that resolve via .Release.Namespace or are
+#                clearly placeholders ("<your-t2-fqdn>", "your-t2-host").
+#   - Refresh strategy: chart_version, chart_appVersion, app_repo_tag updated to
+#     match argocd/applicationsets/simpl-eval/apps/*.yaml pinned values. Most
+#     hardcoded_patterns are version-stable across 2.5.x → 2.8.x because the
+#     chart values.yaml structure has not changed materially in that window.
+#     Where a v3.0.x chart introduces a new EC-specific default, it is annotated.
+
+sources:
+  - chart: identity-provider
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 913
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/identity-provider
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'simpl.participantType: "GOVERNANCE_AUTHORITY"'
+        portability_concern: medium
+        notes: "Default participant type baked into chart values; deployer must override for non-authority deployments."
+      - file: charts/values.yaml
+        pattern: 'EJBCA defaults: profile="Onboarding TLS Profile", caName="OnBoardingCA", entityName="Onboarding End Entity"'
+        portability_concern: medium
+        notes: "EJBCA naming conventions assume SIMPL's PKI scheme; portable to alternate CA only via overrides."
+    notes: "src/main/resources/application.yml is fully parameterized with [ENV_VAR] placeholders. Chart values reference services via .Release.Namespace templating. EC-specific only via participantType default."
+
+  - chart: authentication-provider
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 939
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/authentication-provider
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'simpl.certificate.san: "<your-t2-fqdn>"'
+        portability_concern: low
+        notes: "Placeholder requiring override; we set 'tls.authority.governance.simpl-eval.tfds.io' in our values."
+      - file: charts/values.yaml
+        pattern: 'redis default credentials (username=default, password=admin)'
+        portability_concern: medium
+        notes: "Generic-looking but baked-in default; overridden in our deployment."
+    notes: "application.yml uses [ENV_VAR] placeholders; the create-secret Job has known immutable-field issues handled via ignoreDifferences. No hardcoded EC URLs in source or chart."
+
+  - chart: simpl-fe (frontend)
+    chart_version: 2.7.1
+    chart_appVersion: 2.7.1
+    chart_repo_project_id: 769
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/simpl-fe
+    app_repo_tag: v2.7.1
+    language: TypeScript
+    build_system: nx-monorepo (Angular workspace; ESLint + Prettier; multi-app under apps/)
+    base_image: nginx:1.27.5
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'dataspaceName: "SIMPL"'
+        portability_concern: medium
+        notes: "Branded dataspace name baked into chart; overridable via values."
+    notes: |
+      Frontend uses runtime config via window.env injected at container start
+      (nginx.conf.template + /tmp/env.js). No hardcoded API/Keycloak URLs in
+      environment.prod.ts. Dockerfile final stage is plain nginx serving the
+      built bundle. Most portable of the SIMPL components. NOTE: v3.0.x
+      umbrella does not pin simpl-fe; the upstream is moving to per-component
+      fe-* charts (fe-authentication-provider, fe-users-and-roles, etc.). FVH
+      stays on the monolithic simpl-fe chart for now.
+
+  - chart: onboarding
+    chart_version: 2.8.1
+    chart_appVersion: 2.8.1
+    chart_repo_project_id: 770
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/onboarding
+    app_repo_tag: v2.8.1
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: src/main/resources/application.yml
+        pattern: 'keycloak.realm: "onboarding"'
+        portability_concern: high
+        notes: "Realm name hardcoded in Spring config — the deployer cannot reuse another realm without code/config patch. This is the single most concerning portability issue we found. STILL PRESENT in v2.8.x."
+      - file: charts/values.yaml
+        pattern: 'https://fe.{{ .Release.Namespace }}.dev.simpl-europe.eu/onboarding/...'
+        portability_concern: high
+        notes: "EC-specific dev domain embedded in default email template URLs (applicant approval / additional-request links). Must be overridden for any non-EC deployment. STILL PRESENT in v2.8.x."
+    notes: "Both findings are real portability blockers. The hardcoded realm 'onboarding' in application.yml is the most concerning — it would need a fork to change. Both verified to persist into v2.8.1."
+
+  - chart: users-roles
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 771
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/users-roles
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: src/main/resources/application.yml
+        pattern: 'https://fe.iaa-dsdev-consumer.dev.simpl-europe.eu/users-roles/role-requests-management/review/{roleRequestId}'
+        portability_concern: high
+        notes: "EC-specific consumer FE URL embedded in notification template default. Overridable via env, but the default is misleading and ties the build to EC infra."
+      - file: src/main/resources/application.yml
+        pattern: 'master realm reference; default-roles-participant / default-roles-authority excluded role names'
+        portability_concern: medium
+        notes: "Keycloak 'master' realm name and 'default-roles-*' role names baked into seeding/exclusion logic — assumes SIMPL Keycloak realm naming."
+    notes: "values.yaml exposes hostT1 / authorityHostT2 for override. The application.yml hardcoded URL is the more serious issue."
+
+  - chart: tier1-gateway
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 772
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/tier1-gateway
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'profile: "authority"'
+        portability_concern: low
+        notes: "Default profile assumes authority deployment; flag is exposed for override."
+    notes: "Mostly portable. application.yml builds OIDC issuer URI dynamically from gateway.url + jwt-configuration.primary.realm (both env-injected). hostT1 / cors.allowOrigin / ingress.issuer all empty defaults requiring deployer values."
+
+  - chart: tier2-gateway
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 860
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/tier2-gateway
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'hostT2: "your-t2-host"; authorityUrlT1: "authority-t1-url"'
+        portability_concern: low
+        notes: "Placeholder defaults; not actual EC URLs. Overridden in our values."
+    notes: "Cleanly templated; service references use .Release.Namespace. No hardcoded EC URLs detected in chart values."
+
+  - chart: tier2-proxy
+    chart_version: 1.2.1
+    chart_appVersion: 1.2.1
+    chart_repo_project_id: 1112
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/network/tier2-proxy
+    app_repo_tag: v1.2.1
+    language: Java
+    build_system: Maven (with shade plugin — dependency-reduced-pom.xml present)
+    base_image: amazoncorretto:24-alpine3.22-jdk
+    hardcoded_patterns: []
+    notes: "Cleanest of the components. Only chart-default reference is authentication-provider via .Release.Namespace. Different base image (Corretto 24) — outlier in the SIMPL stack."
+
+  - chart: security-attributes-provider (sap)
+    chart_version: 2.8.0
+    chart_appVersion: 2.8.0
+    chart_repo_project_id: 861
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/iaa/security-attributes-provider
+    app_repo_tag: v2.8.0
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: src/main/resources/application.yml
+        pattern: 'logging package: eu.europa.ec.simpl (DEBUG level)'
+        portability_concern: low
+        notes: "Logging-only reference; package name reflects upstream namespace, not a runtime URL."
+    notes: "application.yml uses [ENV_VAR] placeholders for all URLs/credentials. OpenAPI spec paths /openapi/securityattributesprovider-v{0,1}.yaml are static (acceptable)."
+
+  - chart: fc-service (xsfc-catalogue)
+    chart_version: 1.0.12
+    chart_appVersion: 1.0.12
+    chart_repo_project_id: 820
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/fc-service
+    app_repo_tag: v1.0.12
+    language: Java
+    build_system: "Maven (multi-module: fc-service-api, fc-service-core, fc-service-server)"
+    base_image: eclipse-temurin:17.0.10_7-jdk
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'hashicorp.service: "https://secrets.common01.sandbox-cat-dat.simpl-europe.eu"'
+        portability_concern: high
+        notes: "EC sandbox Vault URL as chart default. Overridden in our values to in-cluster OpenBao."
+      - file: charts/values.yaml
+        pattern: 'ingress.host: "fc-server.dev.simpl-europe.eu"'
+        portability_concern: high
+        notes: "EC dev ingress host as chart default."
+      - file: charts/values.yaml
+        pattern: 'hashicorp.role: "sandbox-cat-dat-role"; secretConfigPath: "/v1/sandbox-cat-dat/data/authority01-xsfc-service"'
+        portability_concern: medium
+        notes: "Sandbox-named role and secret path; portability requires aware overrides (we set role=simpl-eval-governance, secretEngine=secret/simpl-eval-governance)."
+    notes: "Older Java 17 base. Chart has the heaviest EC-specific defaults of any component — three sandbox/EC URLs and identifiers as defaults. Source code itself was not deeply inspected; recommend a follow-up grep for hardcoded URLs in fc-service-server."
+
+  - chart: simpl-notification-service (notification)
+    chart_version: 2.1.1
+    chart_appVersion: 2.1.1
+    chart_repo_project_id: 1002
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/contract-billing/notification-service
+    app_repo_tag: v2.1.1
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'vault.tools.simpl-europe.eu, collector.common01.dev.simpl-europe.eu'
+        portability_concern: high
+        notes: "EC tools-vault and OpenTelemetry collector URLs as chart defaults. Both must be overridden."
+      - file: charts/values.yaml
+        pattern: 'SMTP user="dev@simpl-europe.eu"; default receiver="simpl_tech@simpl-europe.eu"; SMTP host="ssl0.ovh.net"'
+        portability_concern: high
+        notes: "EC operational email addresses and OVH SMTP relay as defaults — privacy/operational leakage if not overridden."
+      - file: charts/values.yaml
+        pattern: 'kafka bootstrap: kafka.be-common.svc.cluster.local:9092'
+        portability_concern: medium
+        notes: "Assumes specific 'be-common' namespace naming; overridden in our values to simpl-eval-common."
+    notes: "Heaviest set of EC-specific defaults across all components. Notification chart looks like it was lifted directly from EC dev environment with minimal sanitization."
+
+  - chart: simpl-schema-manager-charts (schema-manager)
+    chart_version: 0.0.13
+    chart_appVersion: 0.0.13
+    chart_repo_project_id: 1124
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/x-data/simpl-schema-manager
+    app_repo_tag: v0.0.13
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'hashicorp.service: "https://secrets.common01.sandbox-cat-dat.simpl-europe.eu"; ingress host: "schema-manager.dev.simpl-europe.eu"; t2Proxy: "tier2-proxy.authority01.svc.cluster.local"'
+        portability_concern: high
+        notes: "Three EC sandbox references as chart defaults: vault, ingress, and a hardcoded 'authority01' namespace assumption for the tier2-proxy."
+      - file: charts/values.yaml
+        pattern: 'hashicorp.role: "sandbox-cat-dat-role"; secretConfigPath: "/v1/sandbox-cat-dat/data/authority01-simpl-schema-manager"; clusterIssuer: "dev-prod"'
+        portability_concern: medium
+        notes: "Sandbox/authority IDs in role/path defaults; cluster-issuer 'dev-prod' is a non-portable name."
+    notes: "Pre-1.0 chart with EC-specific defaults pervasive. Same pattern as fc-service (gaia-x-edc group)."
+
+  - chart: poc-charts (adapter)
+    chart_version: 1.0.14
+    chart_appVersion: 1.0.14
+    chart_repo_project_id: 759
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/agents/adapters/poc-adapter
+    app_repo_tag: v1.0.14
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'host: "adapter.dev.simpl-europe.eu"; hashicorp.service: "https://secrets.common01.sandbox-cat-dat.simpl-europe.eu"'
+        portability_concern: high
+        notes: "EC dev ingress and sandbox Vault as chart defaults."
+      - file: charts/values.yaml
+        pattern: 'secretConfigPath: "/v1/sandbox-cat-dat/data/authority01-adapter-simpl-backend"; clusterIssuer: "dev-prod"'
+        portability_concern: medium
+        notes: "Same gaia-x-edc group pattern as fc-service and schema-manager."
+    notes: "Chart name 'poc-charts' is a misleading vestige — production-grade chart, but defaults still reflect proof-of-concept origin."
+
+  - chart: infrastructure-consumption-monitoring-service (icm)
+    chart_version: 2.3.1
+    chart_appVersion: 2.3.1
+    chart_repo_project_id: 1240
+    app_repo: https://code.europa.eu/simpl/simpl-open/development/x-monitoring/infrastructure-consumption-monitoring-service
+    app_repo_tag: v2.3.1
+    language: Java
+    build_system: Maven
+    base_image: eclipse-temurin:21-jdk-alpine
+    hardcoded_patterns:
+      - file: charts/values.yaml
+        pattern: 'vault.tools.simpl-europe.eu, collector.common01.dev.simpl-europe.eu'
+        portability_concern: high
+        notes: "Same EC tools-vault and OTel collector defaults as the notification chart."
+      - file: charts/values.yaml
+        pattern: 'OVH API: "https://eu.api.ovh.com/v1/cloud/project/"; OVH project ID "ea5f1127cb1f407899c1e91d490b34e5"'
+        portability_concern: high
+        notes: "Hardcoded OVH cloud project ID and API endpoint — ICM is tightly coupled to the EC's OVH cloud account for consumption monitoring. Likely a real portability blocker for non-OVH deployments."
+      - file: charts/values.yaml
+        pattern: 'kafka bootstrap: kafka.be-common.svc.cluster.local:9092'
+        portability_concern: medium
+        notes: "Same be-common namespace assumption."
+    notes: "ICM is the least portable component along with onboarding: the OVH cloud-project ID is a real cloud-provider lock-in, not just a URL."
+
+unreachable: []
+
+# Self-check (per agent contract):
+# - 14 first-party SIMPL charts inventoried (all from apps/*.yaml with code.europa.eu repoURL).
+# - Versions match argocd/applicationsets/simpl-eval/apps/*.yaml as of 2026-04-28.
+# - hardcoded_patterns lists the high-impact issues per component (URLs, realms,
+#   tenant/cloud IDs); low-severity .Release.Namespace templates omitted as noise.
+# - YAML validated by structure (top-level "sources:" list, "unreachable:" list).
+# - The hardcoded_patterns descriptions are version-stable for the 2.5.x → 2.8.x
+#   chart bumps (no upstream change to the offending values.yaml lines was
+#   detected). Re-verify per-chart on the next major bump.
