@@ -1,8 +1,7 @@
-# SIMPL-Open Dependency Graph for FVH SIMPL-Eval ApplicationSet
-# Sources:
-#   - docs/simpl-open/sbom/charts.yaml (chart deps + parent umbrella relations)
-#   - argocd/applicationsets/simpl-eval/apps/*.yaml (runtime service refs)
-#   - docs/simpl-open/sbom/audit/secrets-coupling.md (vault + ext-secret edges)
+# SIMPL-Open dependency graph for the simpl-eval ApplicationSet
+# Sources: the chart inventory (sbom/charts.yaml), the deployment's
+#   ApplicationSet runtime service references, and the secrets-coupling
+#   audit (vault + ExternalSecret edges).
 
 vars: {
   d2-config: {
@@ -70,23 +69,23 @@ classes: {
 # External Infrastructure
 # ==========================
 ext: External Infrastructure {
-  gcp-sql: GCP Cloud SQL\n<cloud-sql-instance> {
+  gcp-sql: "GCP Cloud SQL\n<cloud-sql-instance>" {
     shape: cylinder
     class: external-infra
   }
-  gcp-kms: GCP KMS\n<openbao-keyring> {
+  gcp-kms: "GCP KMS\n<openbao-keyring>" {
     class: external-infra
   }
   gcp-sm: GCP Secret Manager {
     class: external-infra
   }
-  ghcr: GHCR\nghcr.io/forumviriumhelsinki {
+  ghcr: "GHCR\nghcr.io/forumviriumhelsinki" {
     class: external-infra
   }
-  ec-registry: EC Private Registry\nregistry.code.europa.eu {
+  ec-registry: "EC Private Registry\nregistry.code.europa.eu" {
     class: ec-blocker
   }
-  ec-charts: EC GitLab Helm\ncode.europa.eu/api {
+  ec-charts: "EC GitLab Helm\ncode.europa.eu/api" {
     class: external-infra
   }
 }
@@ -95,54 +94,54 @@ ext: External Infrastructure {
 # simpl-eval-common namespace
 # ==========================
 common: simpl-eval-common namespace {
-  bridge-secrets: bridge-secrets\n(FVH chart) {class: fvh-internal}
-  cloudsql-proxy-c: cloudsql-proxy\n(FVH chart) {class: fvh-internal}
-  openbao: OpenBao\n0.19.1 {class: third-party}
-  openbao-config: openbao-config\n1.3.0 (FVH fork) {class: simpl-deployed}
-  vswh: vault-secrets-webhook\n1.22.1 {class: third-party}
-  confluent-op: confluent-operator\n0.1351.24 {class: third-party}
-  kafka: kafka (SIMPL)\n1.2.0 {class: simpl-deployed}
-  notification: notification\n2.1.1 {class: simpl-deployed}
-  icm: icm\n2.3.1 {class: simpl-deployed}
-  redpanda: redpanda-console\n3.2.0 {class: third-party}
-  mailpit: mailpit\n0.23.1 {class: third-party}
-  pgadmin: pgadmin\n1.50.0 {class: third-party}
+  bridge-secrets: "bridge-secrets\n(FVH chart)" {class: fvh-internal}
+  cloudsql-proxy-c: "cloudsql-proxy\n(FVH chart)" {class: fvh-internal}
+  openbao: "OpenBao\n0.19.1" {class: third-party}
+  openbao-config: "openbao-config\n1.3.0 (FVH fork)" {class: simpl-deployed}
+  vswh: "vault-secrets-webhook\n1.22.1" {class: third-party}
+  confluent-op: "confluent-operator\n0.1351.24" {class: third-party}
+  kafka: "kafka (SIMPL)\n1.2.0" {class: simpl-deployed}
+  notification: "notification\n2.1.1" {class: simpl-deployed}
+  icm: "icm\n2.3.1" {class: simpl-deployed}
+  redpanda: "redpanda-console\n3.2.0" {class: third-party}
+  mailpit: "mailpit\n0.23.1" {class: third-party}
+  pgadmin: "pgadmin\n1.50.0" {class: third-party}
 }
 
 # ==========================
 # simpl-eval-governance namespace
 # ==========================
 gov: simpl-eval-governance namespace {
-  cloudsql-proxy-g: cloudsql-proxy\n(FVH chart) {class: fvh-internal}
-  ejbca-rest-secret: ejbca-rest-api-secret\n(ExternalSecret) {class: fvh-internal}
-  redis: redis (bitnami)\n19.6.0 {class: third-party}
-  keycloak: keycloakx\n7.1.8 {class: third-party}
-  ejbca: ejbca\n1.0.7 {class: third-party}
-  identity: identity-provider\n2.8.0 {class: simpl-deployed}
-  authn: authentication-provider\n2.8.0 {class: simpl-deployed}
-  onboarding: onboarding\n2.8.1 {class: simpl-deployed}
-  sap: sap (security-attributes)\n2.8.0 {class: simpl-deployed}
-  users-roles: users-roles\n2.8.0 {class: simpl-deployed}
-  fc-service: fc-service (xsfc)\n1.0.12 {class: simpl-deployed}
-  schema-mgr: schema-manager\n0.0.13 {class: simpl-deployed}
-  adapter: adapter (poc-charts)\n1.0.14 {class: simpl-deployed}
-  tier1: tier1-gateway\n2.8.0 {class: simpl-deployed}
-  tier2gw: tier2-gateway\n2.8.0 {class: simpl-deployed}
-  tier2px: tier2-proxy\n1.2.1 {class: simpl-deployed}
-  frontend: simpl-fe (frontend)\n2.7.1 {class: simpl-deployed}
+  cloudsql-proxy-g: "cloudsql-proxy\n(FVH chart)" {class: fvh-internal}
+  ejbca-rest-secret: "ejbca-rest-api-secret\n(ExternalSecret)" {class: fvh-internal}
+  redis: "redis (bitnami)\n19.6.0" {class: third-party}
+  keycloak: "keycloakx\n7.1.8" {class: third-party}
+  ejbca: "ejbca\n1.0.7" {class: third-party}
+  identity: "identity-provider\n2.8.0" {class: simpl-deployed}
+  authn: "authentication-provider\n2.8.0" {class: simpl-deployed}
+  onboarding: "onboarding\n2.8.1" {class: simpl-deployed}
+  sap: "sap (security-attributes)\n2.8.0" {class: simpl-deployed}
+  users-roles: "users-roles\n2.8.0" {class: simpl-deployed}
+  fc-service: "fc-service (xsfc)\n1.0.12" {class: simpl-deployed}
+  schema-mgr: "schema-manager\n0.0.13" {class: simpl-deployed}
+  adapter: "adapter (poc-charts)\n1.0.14" {class: simpl-deployed}
+  tier1: "tier1-gateway\n2.8.0" {class: simpl-deployed}
+  tier2gw: "tier2-gateway\n2.8.0" {class: simpl-deployed}
+  tier2px: "tier2-proxy\n1.2.1" {class: simpl-deployed}
+  frontend: "simpl-fe (frontend)\n2.7.1" {class: simpl-deployed}
 }
 
 # ==========================
 # Upstream-only (NOT deployed)
 # ==========================
 undeployed: Upstream-only (FVH skips) {
-  pg-cluster: pg-cluster\n(replaced by Cloud SQL) {class: simpl-undeployed}
-  openbao-init: openbao-init\n(replaced by bridge-secrets) {class: simpl-undeployed}
-  eck-monitoring: eck-monitoring\n(monitoring.enabled=false) {class: simpl-undeployed}
-  eck-operator: eck-operator + CRDs\n(monitoring.enabled=false) {class: simpl-undeployed}
-  postgres-op: postgres-operator\n(needed only for pg-cluster) {class: simpl-undeployed}
-  fe-charts: fe-* charts (5)\n(FVH uses simpl-fe instead) {class: simpl-undeployed}
-  schema-ui: schema-manager-ui\n(FVH skips) {class: simpl-undeployed}
+  pg-cluster: "pg-cluster\n(replaced by Cloud SQL)" {class: simpl-undeployed}
+  openbao-init: "openbao-init\n(replaced by bridge-secrets)" {class: simpl-undeployed}
+  eck-monitoring: "eck-monitoring\n(monitoring.enabled=false)" {class: simpl-undeployed}
+  eck-operator: "eck-operator + CRDs\n(monitoring.enabled=false)" {class: simpl-undeployed}
+  postgres-op: "postgres-operator\n(needed only for pg-cluster)" {class: simpl-undeployed}
+  fe-charts: "fe-* charts (5)\n(FVH uses simpl-fe instead)" {class: simpl-undeployed}
+  schema-ui: "schema-manager-ui\n(FVH skips)" {class: simpl-undeployed}
 }
 
 # ==========================

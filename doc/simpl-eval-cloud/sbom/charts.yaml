@@ -145,7 +145,7 @@ charts:
       the stable 2.12.x line would reintroduce the issue; that is why FVH stays
       on the fork. passCredentials required for the ghcr.io OCI registry. This
       is the one IAA component where FVH is BEHIND the umbrella's recommended
-      pin (by deliberate choice), not ahead."
+      pin (by deliberate choice), not ahead.
 
   - name: fc-service
     aliases: [xsfc-catalogue]
