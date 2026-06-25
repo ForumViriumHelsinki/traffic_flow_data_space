@@ -45,7 +45,7 @@ require() {
 }
 
 usage() {
-    sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,/^[^#]/p' "$0" | sed -n 's/^# \{0,1\}//p'
     exit "${1:-0}"
 }
 
@@ -60,7 +60,7 @@ cmd_versions() {
     # .entries[].[].version only; nested dependency versions are not captured.
     versions=$(curl -fsSL "$url" \
         | yq '.entries[][].version' \
-        | grep -Ev 'SNAPSHOT|-rc\.|latest|hotfix' \
+        | { grep -Ev 'SNAPSHOT|-rc\.|latest|hotfix' || true; } \
         | sort -V \
         | uniq) || die "could not fetch chart index for project ${project_id}"
     if [[ -n "$filter" ]]; then
@@ -93,7 +93,7 @@ cmd_fetch() {
     # can never satisfy the idempotency check above.
     (
         set -euo pipefail
-        work_dir=$(mktemp -d -p "$dest")
+        work_dir=$(mktemp -d "${dest}/tmp.XXXXXX")
         trap 'rm -rf "$work_dir"' EXIT
         curl -fsSL "$url" | tar -xz -C "$work_dir"
         mkdir -p "$dest_dir"
@@ -111,7 +111,7 @@ cmd_diff() {
     dir1=$(cmd_fetch "$project_id" "$chart" "$v1")
     dir2=$(cmd_fetch "$project_id" "$chart" "$v2")
     echo "diffing ${dir1} vs ${dir2}" >&2
-    diff -r "$dir1" "$dir2" || true
+    diff -r "$dir1" "$dir2" || [ $? -eq 1 ]
 }
 
 main() {
