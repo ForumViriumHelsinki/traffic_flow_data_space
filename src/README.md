@@ -20,3 +20,4 @@ This directory contains software components, integration workflows, and helper u
 
 ### 3. Utility Scripts
 *   **[git-scripts/](git-scripts)**: Auxiliary helper scripts used to clone and manage codebase checkouts within local development structures.
+*   **[simpl-chart-tools/](simpl-chart-tools)**: Deployment-agnostic helper for discovering, fetching, and diffing SIMPL-Open Helm charts from the European Commission's public registry on code.europa.eu — useful for version discovery and upgrade planning on either the k3s or managed-cloud deployment path.
